@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\AttendanceLogController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware('auth')
@@ -28,13 +28,6 @@ Route::middleware(['auth', 'role:employee'])->group(function () {
     Route::post('/employee/clock', [App\Http\Controllers\EmployeeController::class, 'clock'])->name('employee.clock');
 });
 
-
-// Employee-only dashboard
-// Route::middleware(['auth', 'role:employee'])->group(function () {
-//     Route::get('/employee/dashboard', function () {
-//         return view('employee.dashboard');
-//     })->name('employee.dashboard');
-// });
 
 // Manager-only dashboard
 Route::middleware(['auth', 'role:manager'])->group(function () {
@@ -81,8 +74,9 @@ Route::middleware('auth')->group(function () {
 
   // Attendance routes
   Route::prefix('attendance')->name('attendance.')->group(function () {
-    Route::get('/clock', [AttendanceController::class, 'showClock'])->name('clock');  // <--- matches route in Blade
-    Route::post('/clock-in', [AttendanceController::class, 'clockIn'])->name('clock-in');
-    Route::post('/clock-out', [AttendanceController::class, 'clockOut'])->name('clock-out');
-    Route::get('/history', [AttendanceController::class, 'history'])->name('history');
+    Route::get('/clock', [AttendanceLogController::class, 'showClock'])->name('clock');  // <--- matches route in Blade
+    Route::post('/clock-in', [AttendanceLogController::class, 'clockIn'])->name('clock-in');
+    Route::post('/clock-out', [AttendanceLogController::class, 'clockOut'])->name('clock-out');
+    Route::get('/history', [AttendanceLogController::class, 'history'])->name('history');
 });
+

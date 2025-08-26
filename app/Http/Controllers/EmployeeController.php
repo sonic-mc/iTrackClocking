@@ -11,54 +11,15 @@ use Illuminate\Support\Facades\Auth;
 
 class EmployeeController extends Controller
 {
-
-    public function dashboard()
-    {
-        $user = Auth::user();
-
-        $attendanceLogs = AttendanceLog::where('employee_id', $user->id)
-                                        ->latest()
-                                        ->take(5)
-                                        ->get();
-
-        $leaveRequests = LeaveRequest::where('employee_id', $user->id)
-                                     ->latest()
-                                     ->take(5)
-                                     ->get();
-
-        $notifications = Notification::where('user_id', $user->id)
-                                     ->latest()
-                                     ->take(5)
-                                     ->get();
-
-        return view('employee.dashboard', compact('user', 'attendanceLogs', 'leaveRequests', 'notifications'));
-    }
-
-    public function clock(Request $request)
-    {
-        $user = Auth::user();
-        $log = AttendanceLog::firstOrCreate(
-            ['employee_id' => $user->id, 'date' => now()->format('Y-m-d')],
-            ['clock_in' => now()]
-        );
-
-        // If clock_in exists, update clock_out
-        if ($log->clock_in && !$log->clock_out) {
-            $log->clock_out = now();
-            $log->save();
-        }
-
-        return redirect()->route('employee.dashboard')->with('success', 'Attendance logged successfully!');
-    }
-}
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         //
     }
-
+    
+    /**
+     * Display a listing of the resource.
+     */
+   
     /**
      * Show the form for creating a new resource.
      */

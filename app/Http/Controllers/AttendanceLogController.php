@@ -4,9 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\AttendanceLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AttendanceLogController extends Controller
 {
+
+     // Show the clock page
+     public function showClock()
+     {
+         $user = Auth::user();
+         $attendanceLogs = AttendanceLog::where('employee_id', $user->id)
+             ->orderBy('created_at', 'desc')
+             ->take(5)
+             ->get();
+ 
+         return view('employee.clock', compact('user', 'attendanceLogs'));
+     }
+ 
     /**
      * Display a listing of the resource.
      */
@@ -61,5 +75,17 @@ class AttendanceLogController extends Controller
     public function destroy(AttendanceLog $attendanceLog)
     {
         //
+    }
+
+    public function history()
+    {
+        $user = Auth::user();
+
+        // Fetch all logs for this user (paginate for large sets)
+        $attendanceLogs = AttendanceLog::where('employee_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('employee.history', compact('user', 'attendanceLogs'));
     }
 }

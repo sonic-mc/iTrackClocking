@@ -556,13 +556,38 @@
             <!-- Current Time -->
             <div class="text-sm text-secondary" id="currentTime"></div>
 
-            <!-- User Menu -->
-            <div class="user-menu">
-                <div class="user-avatar" onclick="toggleUserMenu()">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+           <!-- User Menu -->
+                <div class="user-menu">
+                    @auth
+                        <div class="user-avatar" onclick="toggleUserMenu()">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                        </div>
+                        <div class="user-name">
+                            {{ auth()->user()->name }}
+                        </div>
+                    @else
+                        <a href="{{ route('login') }}" class="btn btn-sm btn-primary">Login</a>
+                    @endauth
                 </div>
+
                 
                 <!-- User Dropdown (hidden by default) -->
+                <div class="user-menu">
+                    @auth
+                        <div class="user-avatar" onclick="toggleUserMenu()">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                        </div>
+                
+                        <div class="user-name">
+                            {{ auth()->user()->name }}
+                        </div>
+                    @else
+                        <a href="{{ route('login') }}" class="btn btn-sm btn-primary">Login</a>
+                    @endauth
+                </div>
+                
+                <!-- User Dropdown (only show when logged in) -->
+                @auth
                 <div class="user-dropdown hidden" id="userDropdown">
                     <div class="user-info">
                         <div class="font-semibold">{{ auth()->user()->name }}</div>
@@ -572,19 +597,22 @@
                     <hr>
                     <a href="{{ route('profile') }}">Profile Settings</a>
                     <a href="{{ route('attendance.history') }}">My Attendance</a>
+                
                     @if(auth()->user()->isManager())
-                    <a href="{{ route('reports') }}">Reports</a>
+                        <a href="{{ route('reports') }}">Reports</a>
                     @endif
+                
                     <hr>
-                    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <a href="{{ route('logout') }}" 
+                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         Logout
                     </a>
                 </div>
-            </div>
-        </div>
+                @endauth
     </header>
 
     <!-- Sidebar -->
+    @auth
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-content">
             <!-- Quick Clock Actions -->
@@ -598,6 +626,8 @@
                     Clock Out
                 </button>
             </div>
+            @endauth
+
 
             <!-- Navigation Menu -->
             <nav>
@@ -647,7 +677,8 @@
                         Leave History
                     </a>
                 </div>
-
+                 
+                @auth
                 @if(auth()->user()->isManager() || auth()->user()->isManager())
                 <!-- Management -->
                 <div class="nav-section">
@@ -687,7 +718,9 @@
                     </a>
                 </div>
                 @endif
+                @endauth
 
+                @auth
                 @if(auth()->user()->isAdmin())
                 <!-- System -->
                 <div class="nav-section">
@@ -706,6 +739,7 @@
                     </a>
                 </div>
                 @endif
+                @endauth
             </nav>
         </div>
     </aside>

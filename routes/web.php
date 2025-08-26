@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AttendanceLogController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\GeofenceController;
+use App\Http\Controllers\ShiftController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware('auth')
@@ -80,3 +84,28 @@ Route::middleware('auth')->group(function () {
     Route::get('/history', [AttendanceLogController::class, 'history'])->name('history');
 });
 
+
+
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('/settings', [AdminController::class, 'settings'])->name('admin.settings');
+    Route::get('/biometric', [AdminController::class, 'biometric'])->name('admin.biometric');
+    Route::get('/audit', [AdminController::class, 'audit'])->name('admin.audit');
+    Route::resource('employees', EmployeeController::class);
+});
+
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/geofence/manage', [GeofenceController::class, 'index'])->name('geofence.manage');
+    Route::post('/geofence/store', [GeofenceController::class, 'store'])->name('geofence.store');
+    Route::put('/geofence/{id}', [GeofenceController::class, 'update'])->name('geofence.update');
+    Route::delete('/geofence/{id}', [GeofenceController::class, 'destroy'])->name('geofence.destroy');
+});
+
+
+
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/shifts/manage', [ShiftController::class, 'index'])->name('shifts.manage');
+    Route::post('/shifts/store', [ShiftController::class, 'store'])->name('shifts.store');
+    Route::put('/shifts/{id}', [ShiftController::class, 'update'])->name('shifts.update');
+    Route::delete('/shifts/{id}', [ShiftController::class, 'destroy'])->name('shifts.destroy');
+});

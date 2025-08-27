@@ -74,4 +74,22 @@ public function isClockedIn(): bool
 
     return $lastAttendance && is_null($lastAttendance->clock_out_time);
 }
+
+public function employee()
+{
+    return $this->hasOne(Employee::class);
+}
+
+public function shifts()
+{
+    // User → Employee → EmployeeShift
+    return $this->hasManyThrough(EmployeeShift::class, Employee::class, 'user_id', 'employee_id');
+}
+
+public function overtimes()
+{
+    // User → Employee → OvertimeLog
+    return $this->hasManyThrough(OvertimeLog::class, Employee::class, 'user_id', 'employee_id');
+}
+
 }

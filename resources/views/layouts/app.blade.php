@@ -651,7 +651,7 @@
                 <!-- Time Management -->
                 <div class="nav-section">
                     <div class="nav-title">Time Management</div>
-                    <a href="#" class="nav-item {{ request()->routeIs('shifts.*') ? 'active' : '' }}">
+                    <a href="{{ route('shifts.index') }}" class="nav-item {{ request()->routeIs('shifts.*') ? 'active' : '' }}">
                         <span class="nav-icon">🔄</span>
                         Shift Schedule
                     </a>
@@ -659,7 +659,7 @@
                         <span class="nav-icon">☕</span>
                         Breaks
                     </a>
-                    <a href="#" class="nav-item {{ request()->routeIs('overtime.*') ? 'active' : '' }}">
+                    <a href="{{ route('overtime.index') }}" class="nav-item {{ request()->routeIs('overtime.*') ? 'active' : '' }}">
                         <span class="nav-icon">⏳</span>
                         Overtime
                     </a>
@@ -668,11 +668,11 @@
                 <!-- Leave Management -->
                 <div class="nav-section">
                     <div class="nav-title">Leave</div>
-                    <a href="#" class="nav-item {{ request()->routeIs('leaves.request') ? 'active' : '' }}">
+                    <a href="{{ route('leave.request') }}" class="nav-item {{ request()->routeIs('leaves.request') ? 'active' : '' }}">
                         <span class="nav-icon">📝</span>
                         Request Leave
                     </a>
-                    <a href="#" class="nav-item {{ request()->routeIs('leaves.history') ? 'active' : '' }}">
+                    <a href="{{ route('leave.history') }}" class="nav-item {{ request()->routeIs('leaves.history') ? 'active' : '' }}">
                         <span class="nav-icon">📋</span>
                         Leave History
                     </a>

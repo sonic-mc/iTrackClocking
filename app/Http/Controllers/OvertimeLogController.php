@@ -11,9 +11,14 @@ class OvertimeLogController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        //
-    }
+{
+    $overtimes = auth()->user()->overtimes()
+        ->orderBy('date', 'desc')
+        ->get();
+
+    return view('time.overtime', compact('overtimes'));
+}
+
 
     /**
      * Show the form for creating a new resource.

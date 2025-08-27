@@ -12,8 +12,15 @@ class EmployeeShiftController extends Controller
      */
     public function index()
     {
-        //
+        $shifts = auth()->user()->shifts()
+            ->where('date', '>=', now()->toDateString())
+            ->orderBy('date', 'asc')
+            ->get();
+
+    
+        return view('time.shifts', compact('shifts'));
     }
+    
 
     /**
      * Show the form for creating a new resource.

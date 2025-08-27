@@ -8,6 +8,10 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\GeofenceController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\EmployeeShiftController;
+use App\Http\Controllers\BreakController;
+use App\Http\Controllers\OvertimeLogController;
+use App\Http\Controllers\LeaveRequestController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware('auth')
@@ -108,4 +112,34 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/shifts/store', [ShiftController::class, 'store'])->name('shifts.store');
     Route::put('/shifts/{id}', [ShiftController::class, 'update'])->name('shifts.update');
     Route::delete('/shifts/{id}', [ShiftController::class, 'destroy'])->name('shifts.destroy');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('shifts')->name('shifts.')->group(function () {
+        Route::get('/', [EmployeeShiftController::class, 'index'])->name('index');
+    
+    });
+
+    Route::prefix('breaks')->name('breaks.')->group(function () {
+        Route::get('/', [BreakController::class, 'index'])->name('index');
+    });
+
+    Route::prefix('overtime')->name('overtime.')->group(function () {
+        Route::get('/', [OvertimeLogController::class, 'index'])->name('index');
+    });
+
+});
+
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/leave/request', [LeaveRequestController::class, 'requestForm'])
+        ->name('leave.request');
+
+    // Submit leave request
+    Route::post('/leave/request', [LeaveRequestController::class, 'store'])
+        ->name('leave.store');
+
+    // View leave history
+    Route::get('/leave/history', [LeaveRequestController::class, 'history'])
+        ->name('leave.history');
 });

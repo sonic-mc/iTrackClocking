@@ -143,3 +143,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/leave/history', [LeaveRequestController::class, 'history'])
         ->name('leave.history');
 });
+
+// Manager Leave Approvals
+Route::middleware(['auth'])->group(function () {
+    Route::get('/leave/approval', [LeaveRequestController::class, 'approveIndex'])->name('leave.approve');
+    Route::post('/leave/{id}/approve', [LeaveRequestController::class, 'approve'])->name('leave.approve.action');
+    Route::post('/leave/{id}/reject', [LeaveRequestController::class, 'reject'])->name('leave.reject.action');
+});
+

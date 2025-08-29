@@ -691,7 +691,7 @@
                         <span class="nav-icon">📊</span>
                         Attendance Overview
                     </a>
-                    <a href="#" class="nav-item {{ request()->routeIs('leaves.approve') ? 'active' : '' }}">
+                    <a href="{{ route('leave.approve') }}" class="nav-item {{ request()->routeIs('leaves.approve') ? 'active' : '' }}">
                         <span class="nav-icon">✅</span>
                         Approve Leaves
                     </a>

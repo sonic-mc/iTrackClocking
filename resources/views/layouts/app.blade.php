@@ -687,7 +687,7 @@
                         <span class="nav-icon">👥</span>
                         Employees
                     </a>
-                    <a href="#" class="nav-item {{ request()->routeIs('attendance.manage') ? 'active' : '' }}">
+                    <a href="{{ route('employees.attendance') }}" class="nav-item {{ request()->routeIs('attendance.manage') ? 'active' : '' }}">
                         <span class="nav-icon">📊</span>
                         Attendance Overview
                     </a>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AttendanceLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Employee;
 
 class AttendanceLogController extends Controller
 {
@@ -27,6 +28,16 @@ class AttendanceLogController extends Controller
     public function index()
     {
         //
+    }
+
+    public function overview()
+    {
+         // Fetch employees with attendance logs ordered by clock in time
+    $employees = Employee::with(['user', 'attendanceLogs' => function($q) {
+        $q->orderBy('clock_in_time', 'desc');
+    }])->get();
+
+        return view('employee.attendance', compact('employees'));
     }
 
     /**

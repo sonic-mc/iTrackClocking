@@ -45,4 +45,9 @@ public function overtimes()
     return $this->hasMany(OvertimeLog::class, 'employee_id');
 }
 
+public function attendanceLogs()
+{
+    return $this->hasMany(\App\Models\AttendanceLog::class, 'employee_id');
+}
+
 }

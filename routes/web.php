@@ -156,3 +156,4 @@ Route::middleware(['auth', 'role:manager'])->group(function () {
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
 });
 
+Route::get('/attendance/manage', [AttendanceLogController::class, 'overview'])->name('employees.attendance');

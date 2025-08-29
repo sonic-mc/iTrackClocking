@@ -101,4 +101,42 @@ class EmployeeController extends Controller
     {
         //
     }
+
+    public function clock(Request $request)
+    {
+        $user = Auth::user();
+    
+        // Get the employee record linked to this user
+        $employee = $user->employee; // assuming you have User->employee() relation
+    
+        if (!$employee) {
+            return redirect()->back()->with('error', 'Employee record not found.');
+        }
+    
+        // Find today's attendance log if it exists
+        $attendance = AttendanceLog::where('employee_id', $employee->id)
+            ->whereDate('clock_in_time', today())
+            ->first();
+    
+        if (!$attendance) {
+            // Clock In
+            AttendanceLog::create([
+                'employee_id'   => $employee->id,
+                'clock_in_time' => now(),
+            ]);
+    
+            return redirect()->back()->with('success', 'You have clocked in successfully.');
+        } else {
+            // If already clocked in but no clock out, clock out
+            if (is_null($attendance->clock_out_time)) {
+                $attendance->update([
+                    'clock_out_time' => now(),
+                ]);
+    
+                return redirect()->back()->with('success', 'You have clocked out successfully.');
+            } else {
+                return redirect()->back()->with('success', 'You already clocked in and out today.');
+            }
+        }
+    }
 }

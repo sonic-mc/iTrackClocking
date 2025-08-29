@@ -33,20 +33,18 @@
                 <th style="border:1px solid #e5e7eb; padding:10px;">Date</th>
                 <th style="border:1px solid #e5e7eb; padding:10px;">Clock In</th>
                 <th style="border:1px solid #e5e7eb; padding:10px;">Clock Out</th>
-                <th style="border:1px solid #e5e7eb; padding:10px;">Status</th>
             </tr>
         </thead>
         <tbody>
             @forelse($attendanceLogs as $log)
             <tr>
-                <td style="border:1px solid #e5e7eb; padding:10px;">{{ $log->date }}</td>
-                <td style="border:1px solid #e5e7eb; padding:10px;">{{ $log->clock_in ?? '-' }}</td>
-                <td style="border:1px solid #e5e7eb; padding:10px;">{{ $log->clock_out ?? '-' }}</td>
-                <td style="border:1px solid #e5e7eb; padding:10px;">{{ $log->status ?? 'Pending' }}</td>
+                <td style="border:1px solid #e5e7eb; padding:10px;">{{ \Carbon\Carbon::parse($log->clock_in_time)->format('Y-m-d') }}</td>
+                <td style="border:1px solid #e5e7eb; padding:10px;">{{ $log->clock_in_time ? \Carbon\Carbon::parse($log->clock_in_time)->format('H:i') : '-' }}</td>
+                <td style="border:1px solid #e5e7eb; padding:10px;">{{ $log->clock_out_time ? \Carbon\Carbon::parse($log->clock_out_time)->format('H:i') : '-' }}</td>
             </tr>
             @empty
             <tr>
-                <td colspan="4" style="text-align:center; padding:10px;">No attendance logs found.</td>
+                <td colspan="3" style="text-align:center; padding:10px;">No attendance logs found.</td>
             </tr>
             @endforelse
         </tbody>
@@ -71,7 +69,7 @@
                 <td style="border:1px solid #e5e7eb; padding:10px;">{{ $leave->type }}</td>
                 <td style="border:1px solid #e5e7eb; padding:10px;">{{ $leave->start_date }}</td>
                 <td style="border:1px solid #e5e7eb; padding:10px;">{{ $leave->end_date }}</td>
-                <td style="border:1px solid #e5e7eb; padding:10px;">{{ $leave->status }}</td>
+                <td style="border:1px solid #e5e7eb; padding:10px;">{{ ucfirst($leave->status) }}</td>
             </tr>
             @empty
             <tr>
@@ -82,10 +80,53 @@
     </table>
 </div>
 
+<!-- Shift Info -->
+<div style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;">
+    <h2 style="font-size:18px; margin-bottom:10px;">My Shift</h2>
+    @if($shift)
+        <p><strong>{{ $shift->name }}</strong></p>
+        <p>Start: {{ $shift->start_time }} | End: {{ $shift->end_time }}</p>
+        @if($shift->break_start && $shift->break_end)
+            <p>Break: {{ $shift->break_start }} - {{ $shift->break_end }}</p>
+        @endif
+    @else
+        <p style="color:#6b7280;">No shift assigned.</p>
+    @endif
+</div>
+
+<!-- Overtime Logs -->
+<div style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;">
+    <h2 style="font-size:18px; margin-bottom:10px;">Recent Overtime</h2>
+    <table style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr style="background:#f3f4f6;">
+                <th style="border:1px solid #e5e7eb; padding:10px;">Date</th>
+                <th style="border:1px solid #e5e7eb; padding:10px;">Hours</th>
+                <th style="border:1px solid #e5e7eb; padding:10px;">Approved By</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($overtimeLogs as $ot)
+            <tr>
+                <td style="border:1px solid #e5e7eb; padding:10px;">{{ $ot->date }}</td>
+                <td style="border:1px solid #e5e7eb; padding:10px;">{{ $ot->hours }}</td>
+                <td style="border:1px solid #e5e7eb; padding:10px;">
+                    {{ $ot->approved_by ? \App\Models\User::find($ot->approved_by)->name : 'Pending' }}
+                </td>
+            </tr>
+            @empty
+            <tr>
+                <td colspan="3" style="text-align:center; padding:10px;">No overtime records found.</td>
+            </tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+
 <!-- Notifications -->
 <div style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
     <h2 style="font-size:18px; margin-bottom:10px;">Recent Notifications</h2>
-    <ul style="list-style:none;">
+    <ul style="list-style:none; margin:0; padding:0;">
         @forelse($notifications as $note)
         <li style="padding:10px; border-bottom:1px solid #e5e7eb;">{{ $note->message }}</li>
         @empty

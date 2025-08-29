@@ -571,20 +571,6 @@
                 </div>
 
                 
-                <!-- User Dropdown (hidden by default) -->
-                <div class="user-menu">
-                    @auth
-                        <div class="user-avatar" onclick="toggleUserMenu()">
-                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                        </div>
-                
-                        <div class="user-name">
-                            {{ auth()->user()->name }}
-                        </div>
-                    @else
-                        <a href="{{ route('login') }}" class="btn btn-sm btn-primary">Login</a>
-                    @endauth
-                </div>
                 
                 <!-- User Dropdown (only show when logged in) -->
                 @auth

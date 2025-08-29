@@ -19,9 +19,11 @@ class Employee extends Model
     ];
 
     public function user()
-{
-    return $this->belongsTo(User::class);
-}
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+    
+   
 
  // Each employee belongs to a Branch
  public function branch()

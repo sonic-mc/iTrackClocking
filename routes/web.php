@@ -82,10 +82,15 @@ Route::middleware('auth')->group(function () {
 
   // Attendance routes
   Route::prefix('attendance')->name('attendance.')->group(function () {
-    Route::get('/clock', [AttendanceLogController::class, 'showClock'])->name('clock');  // <--- matches route in Blade
+    Route::get('/clock', [AttendanceLogController::class, 'clock'])->name('clock');
     Route::post('/clock-in', [AttendanceLogController::class, 'clockIn'])->name('clock-in');
     Route::post('/clock-out', [AttendanceLogController::class, 'clockOut'])->name('clock-out');
     Route::get('/history', [AttendanceLogController::class, 'history'])->name('history');
+});
+
+
+Route::middleware(['auth', 'role:employee'])->group(function () {
+    Route::post('/employee/clock', [EmployeeController::class, 'clock'])->name('employee.clock');
 });
 
 

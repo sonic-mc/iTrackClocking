@@ -151,3 +151,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/leave/{id}/reject', [LeaveRequestController::class, 'reject'])->name('leave.reject.action');
 });
 
+Route::middleware(['auth', 'role:manager'])->group(function () {
+    Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
+    Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
+});
+

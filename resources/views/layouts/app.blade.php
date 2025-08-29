@@ -683,7 +683,7 @@
                 <!-- Management -->
                 <div class="nav-section">
                     <div class="nav-title">Management</div>
-                    <a href="#" class="nav-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
+                    <a href="{{ route('employees.index') }}" class="nav-item {{ request()->routeIs('employees.*') ? 'active' : '' }}">
                         <span class="nav-icon">👥</span>
                         Employees
                     </a>

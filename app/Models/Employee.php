@@ -23,6 +23,18 @@ class Employee extends Model
     return $this->belongsTo(User::class);
 }
 
+ // Each employee belongs to a Branch
+ public function branch()
+ {
+     return $this->belongsTo(Branch::class);
+ }
+
+ // Each employee belongs to a Department
+ public function department()
+ {
+     return $this->belongsTo(Department::class);
+ }
+
 public function shifts()
 {
     return $this->hasMany(EmployeeShift::class);

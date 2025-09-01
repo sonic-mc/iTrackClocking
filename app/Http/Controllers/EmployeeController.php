@@ -33,7 +33,6 @@ class EmployeeController extends Controller
 
         // Only users who do not already have an employee record AND are regular users (employee role)
         $users = User::doesntHave('employee')
-            ->where('role', 'employee') // avoid selecting admins/managers
             ->orderBy('name')
             ->get();
 

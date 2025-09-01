@@ -4,7 +4,7 @@
 <div class="container mx-auto p-4">
     <h2 class="text-2xl font-bold mb-4">Employees</h2>
 
-    <a href="{{ route('employees.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4 inline-block">
+    <a href="{{ route('admin.employees.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-4 inline-block">
         Add Employee
     </a>
 

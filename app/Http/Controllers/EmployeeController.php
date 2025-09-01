@@ -21,14 +21,42 @@ class EmployeeController extends Controller
     }
     
    
+    // Show form to create an employee from an existing user
     public function create()
     {
-        $users = User::doesntHave('employee')->get(); // Only users not yet employees
-        $branches = Branch::all();
-        $departments = Department::all();
+        $auth = Auth::user();
+
+        // Only allow admin or manager to access this page
+        if (! in_array($auth->role, ['admin', 'manager'])) {
+            abort(403, 'Unauthorized.');
+        }
+
+        // Only users who do not already have an employee record AND are regular users (employee role)
+        $users = User::doesntHave('employee')
+            ->where('role', 'employee') // avoid selecting admins/managers
+            ->orderBy('name')
+            ->get();
+
+        // If manager, scope branches to manager's branch (if available)
+        if ($auth->role === 'manager') {
+           
+            $managerEmployee = $auth->employee;
+            if ($managerEmployee && $managerEmployee->branch_id) {
+                $branches = Branch::where('id', $managerEmployee->branch_id)->get();
+            } else {
+                
+                $branches = collect();
+            }
+        } else {
+        
+            $branches = Branch::orderBy('name')->get();
+        }
+
+        $departments = Department::orderBy('name')->get();
 
         return view('admin.employees.create', compact('users', 'branches', 'departments'));
     }
+
 
 
     /**
@@ -66,7 +94,7 @@ class EmployeeController extends Controller
         'status' => $request->status,
     ]);
 
-    return redirect()->route('employees.create')->with('success', 'Employee added successfully!');
+    return redirect()->route('admin.employees.create')->with('success', 'Employee added successfully!');
 }
     
 
@@ -103,40 +131,39 @@ class EmployeeController extends Controller
     }
 
     public function clock(Request $request)
-    {
-        $user = Auth::user();
-    
-        // Get the employee record linked to this user
-        $employee = $user->employee; // assuming you have User->employee() relation
-    
-        if (!$employee) {
-            return redirect()->back()->with('error', 'Employee record not found.');
-        }
-    
-        // Find today's attendance log if it exists
-        $attendance = AttendanceLog::where('employee_id', $employee->id)
-            ->whereDate('clock_in_time', today())
-            ->first();
-    
-        if (!$attendance) {
-            // Clock In
-            AttendanceLog::create([
-                'employee_id'   => $employee->id,
-                'clock_in_time' => now(),
+{
+    $user = Auth::user();
+    $employee = $user->employee; // now this will work
+
+    if (!$employee) {
+        return redirect()->back()->with('error', 'Employee record not found.');
+    }
+
+    // Find today's attendance log if it exists
+    $attendance = AttendanceLog::where('employee_id', $employee->id)
+        ->whereDate('clock_in_time', today())
+        ->first();
+
+    if (!$attendance) {
+        // Clock In
+        AttendanceLog::create([
+            'employee_id'   => $employee->id,
+            'clock_in_time' => now(),
+        ]);
+
+        return redirect()->back()->with('success', 'You have clocked in successfully.');
+    } else {
+        // If already clocked in but no clock out, clock out
+        if (is_null($attendance->clock_out_time)) {
+            $attendance->update([
+                'clock_out_time' => now(),
             ]);
-    
-            return redirect()->back()->with('success', 'You have clocked in successfully.');
+
+            return redirect()->back()->with('success', 'You have clocked out successfully.');
         } else {
-            // If already clocked in but no clock out, clock out
-            if (is_null($attendance->clock_out_time)) {
-                $attendance->update([
-                    'clock_out_time' => now(),
-                ]);
-    
-                return redirect()->back()->with('success', 'You have clocked out successfully.');
-            } else {
-                return redirect()->back()->with('success', 'You already clocked in and out today.');
-            }
+            return redirect()->back()->with('info', 'You already clocked in and out today.');
         }
     }
+}
+
 }

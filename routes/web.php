@@ -82,7 +82,6 @@ Route::middleware('auth')->group(function () {
 
   // Attendance routes
   Route::prefix('attendance')->name('attendance.')->group(function () {
-    Route::get('/clock', [AttendanceLogController::class, 'clock'])->name('clock');
     Route::post('/clock-in', [AttendanceLogController::class, 'clockIn'])->name('clock-in');
     Route::post('/clock-out', [AttendanceLogController::class, 'clockOut'])->name('clock-out');
     Route::get('/history', [AttendanceLogController::class, 'history'])->name('history');
@@ -159,6 +158,13 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:manager'])->group(function () {
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
+   
 });
 
 Route::get('/attendance/manage', [AttendanceLogController::class, 'overview'])->name('employees.attendance');
+
+Route::middleware(['auth', 'role:admin,manager'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('employees/create', [EmployeeController::class, 'create'])->name('employees.create');
+    Route::post('employees', [EmployeeController::class, 'store'])->name('employees.store');
+    Route::get('employees', [EmployeeController::class, 'index'])->name('employees.index');
+});

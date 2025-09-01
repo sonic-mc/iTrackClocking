@@ -624,10 +624,14 @@
                         <span class="nav-icon">📊</span>
                         Dashboard
                     </a>
-                    <a href="{{ route('attendance.clock') }}" class="nav-item {{ request()->routeIs('attendance.*') ? 'active' : '' }}">
-                        <span class="nav-icon">⏰</span>
-                        Clock In/Out
-                    </a>
+                    <form action="{{ route('employee.clock') }}" method="POST" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="nav-item {{ request()->routeIs('employee.clock') ? 'active' : '' }}" 
+                                style="background:none; border:none; cursor:pointer; width:100%; text-align:left;">
+                            <span class="nav-icon">⏰</span>
+                            Clock In/Out
+                        </button>
+                    </form>
                     <a href="{{ route('attendance.history') }}" class="nav-item {{ request()->routeIs('attendance.history') ? 'active' : '' }}">
                         <span class="nav-icon">📅</span>
                         My Attendance

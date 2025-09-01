@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class AttendanceLog extends Model
 {
     protected $fillable = [
-        'user_id',
+        'employee_id',
         'clock_in_time',
         'clock_out_time',
-        'location', // optional
+        'location_lat',
+        'location_lng',
+        'geofence_status',
+        'device_info',
     ];
 
     public function user()

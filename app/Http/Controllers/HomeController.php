@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Models\Shift;
 use App\Models\OvertimeLog;
 use Carbon\Carbon;
+use App\Models\AuditLog;
 
 class HomeController extends Controller
 {
@@ -123,9 +124,37 @@ class HomeController extends Controller
                 ->latest()
                 ->take(5)
                 ->get();
-                
+            
+             
+           // Count biometric enrollments
+            $fingerprintUsers = \App\Models\User::whereNotNull('biometric_data->fingerprint')->count();
+            $faceIdUsers = \App\Models\User::whereNotNull('biometric_data->face_id')->count();
 
-            return view('admin.dashboard', compact(
+            $pendingEnrollment = \App\Models\User::where(function($query) {
+                $query->whereNull('biometric_data')
+                      ->orWhere('biometric_data->fingerprint', null)
+                      ->orWhere('biometric_data->face_id', null);
+            })->count();
+            
+
+            // Get last 7 days
+            $dates = collect();
+            $attendanceCounts = collect();
+            for ($i = 6; $i >= 0; $i--) {
+                $date = Carbon::today()->subDays($i);
+                $dates->push($date->format('D, M d')); // e.g., Mon, Sep 02
+                $attendanceCounts->push(
+                    AttendanceLog::whereDate('clock_in_time', $date)->count()
+                );
+            }
+
+            $recentActivities = AuditLog::with('user.employee')
+            ->latest()
+            ->take(10)
+            ->get();
+
+            return view('admin.dashboard',['dates' => $dates,
+            'attendanceCounts' => $attendanceCounts], compact(
                 'user',
                 'totalEmployees',
                 'newEmployeesThisMonth',
@@ -139,10 +168,15 @@ class HomeController extends Controller
                 'newNotifications',
                 'todayAttendance',
                 'recentLeaves',
-                'notifications'
+                'notifications',
+                'fingerprintUsers',
+                'faceIdUsers',
+                'pendingEnrollment',
+                'recentActivities'
+                
             ));
 
-            // return view('admin.dashboard', compact('user', 'attendanceLogs', 'leaveRequests', 'notifications'));
+           
         } elseif ($role === 'manager') {
             // Manager dashboard data
             $employeeCount   = Employee::count();

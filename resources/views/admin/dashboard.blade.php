@@ -580,43 +580,28 @@
             </button>
         </div>
         <div id="alertsList">
-            <div class="alert-item">
-                <div class="alert-icon danger">⚠️</div>
-                <div class="alert-content">
-                    <div class="alert-title">Geofence Violation</div>
-                    <div class="alert-desc">John Doe clocked in outside work area</div>
+            @forelse($notifications as $notification)
+                <div class="alert-item">
+                    <div class="alert-icon 
+                        {{ $notification->type === 'geofence' ? 'danger' : 
+                           ($notification->type === 'late' ? 'warning' : 
+                           ($notification->type === 'leave' ? 'info' : 'warning')) }}">
+                        {{ $notification->type === 'geofence' ? '⚠️' : 
+                           ($notification->type === 'late' ? '🕐' : 
+                           ($notification->type === 'leave' ? '📝' : '⏳')) }}
+                    </div>
+                    <div class="alert-content">
+                        <div class="alert-title">{{ ucfirst($notification->type) }}</div>
+                        <div class="alert-desc">{{ $notification->message }}</div>
+                    </div>
+                    <div class="alert-time">{{ $notification->created_at->diffForHumans() }}</div>
                 </div>
-                <div class="alert-time">2 min ago</div>
-            </div>
-            
-            <div class="alert-item">
-                <div class="alert-icon warning">🕐</div>
-                <div class="alert-content">
-                    <div class="alert-title">Late Arrival</div>
-                    <div class="alert-desc">Sarah Wilson arrived 45 minutes late</div>
-                </div>
-                <div class="alert-time">15 min ago</div>
-            </div>
-            
-            <div class="alert-item">
-                <div class="alert-icon info">📝</div>
-                <div class="alert-content">
-                    <div class="alert-title">Leave Request</div>
-                    <div class="alert-desc">Mike Johnson requested 3 days leave</div>
-                </div>
-                <div class="alert-time">1 hour ago</div>
-            </div>
-            
-            <div class="alert-item">
-                <div class="alert-icon warning">⏳</div>
-                <div class="alert-content">
-                    <div class="alert-title">Excessive Overtime</div>
-                    <div class="alert-desc">Emily Davis exceeded 10 hours today</div>
-                </div>
-                <div class="alert-time">2 hours ago</div>
-            </div>
+            @empty
+                <p class="text-gray-500">No alerts right now 🚀</p>
+            @endforelse
         </div>
     </div>
+    
 
     <!-- Live Employee Status -->
     <div class="table-container">
@@ -644,94 +629,112 @@
                     </tr>
                 </thead>
                 <tbody id="employeeStatusTable">
+                    @foreach($todayAttendance as $log)
+                    @php
+                        $status = 'Clocked Out';
+                        $badge = 'secondary';
+                        $icon = '⚪';
+                
+                        $shiftStart = \Carbon\Carbon::parse('08:00:00');
+                        $overtimeThreshold = 9;
+                
+                        $clockIn = \Carbon\Carbon::parse($log->clock_in_time);
+                
+                        if (!$log->clock_out_time) {
+                            $workedHours = now()->diffInHours($clockIn);
+                
+                            if ($clockIn->gt($shiftStart)) {
+                                $status = 'Late';
+                                $badge = 'danger';
+                                $icon = '🔴';
+                            } elseif ($workedHours > $overtimeThreshold) {
+                                $status = 'Overtime';
+                                $badge = 'warning';
+                                $icon = '⏳';
+                            } else {
+                                $status = 'Clocked In';
+                                $badge = 'success';
+                                $icon = '🟢';
+                            }
+                        }
+                    @endphp
                     <tr>
                         <td>
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                                    JD
+                                    {{ strtoupper(substr($log->employee->user->name,0,1)) }}
                                 </div>
                                 <div>
-                                    <div class="font-semibold">John Doe</div>
-                                    <div class="text-sm text-secondary">Software Developer</div>
+                                    <div class="font-semibold">{{ $log->employee->user->name }}</div>
+                                    <div class="text-sm text-secondary">{{ $log->employee->position ?? 'Employee' }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td><span class="badge success">🟢 Clocked In</span></td>
-                        <td>08:30 AM</td>
+                        <td><span class="badge {{ $badge }}">{{ $icon }} {{ $status }}</span></td>
+                        <td>{{ $clockIn->format('h:i A') }}</td>
                         <td><span class="text-success">📍 In Zone</span></td>
                         <td>
-                            <button class="btn-secondary" onclick="viewEmployee('john-doe')">View</button>
+                            <button class="btn-secondary" onclick="viewEmployee('{{ $log->employee->id }}')">View</button>
                         </td>
                     </tr>
-                    <tr>
-                        <td>
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                                    SW
-                                </div>
-                                <div>
-                                    <div class="font-semibold">Sarah Wilson</div>
-                                    <div class="text-sm text-secondary">Marketing Manager</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td><span class="badge danger">🔴 Late</span></td>
-                        <td>09:45 AM</td>
-                        <td><span class="text-success">📍 In Zone</span></td>
-                        <td>
-                            <button class="btn-secondary" onclick="viewEmployee('sarah-wilson')">View</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                                    MJ
-                                </div>
-                                <div>
-                                    <div class="font-semibold">Mike Johnson</div>
-                                    <div class="text-sm text-secondary">Project Manager</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td><span class="badge info">⏸️ On Break</span></td>
-                        <td>08:15 AM</td>
-                        <td><span class="text-success">📍 In Zone</span></td>
-                        <td>
-                            <button class="btn-secondary" onclick="viewEmployee('mike-johnson')">View</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                                    ED
-                                </div>
-                                <div>
-                                    <div class="font-semibold">Emily Davis</div>
-                                    <div class="text-sm text-secondary">HR Specialist</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td><span class="badge warning">⏳ Overtime</span></td>
-                        <td>07:00 AM</td>
-                        <td><span class="text-success">📍 In Zone</span></td>
-                        <td>
-                            <button class="btn-secondary" onclick="viewEmployee('emily-davis')">View</button>
-                        </td>
-                    </tr>
+                @endforeach
+                
                 </tbody>
+                
             </table>
         </div>
     </div>
 </div>
 
 <div class="dashboard-grid">
-    <!-- Attendance Analytics Chart -->
-    <div class="chart-container">
-        <h3 class="card-title" style="margin-bottom: 20px;">Weekly Attendance Trends</h3>
-        <canvas id="attendanceChart"></canvas>
-    </div>
+   <!-- Attendance Analytics Chart -->
+<div class="chart-container">
+    <h3 class="card-title" style="margin-bottom: 20px;">Weekly Attendance Trends</h3>
+    <canvas id="attendanceChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('attendanceChart').getContext('2d');
+    const attendanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: @json($dates),
+            datasets: [{
+                label: 'Clocked In Employees',
+                data: @json($attendanceCounts),
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderColor: 'rgba(59, 130, 246, 1)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: true,
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+</script>
+
 
     <!-- Geofence Overview -->
     <div class="card">
@@ -748,12 +751,15 @@
             </div>
             <div style="margin-top: 16px;">
                 <div class="flex justify-between items-center">
-                    <span>Active Zones: <strong>3</strong></span>
-                    <span>Employees in Zone: <strong>187/248</strong></span>
+                    <span>Active Zones: <strong>{{ $activeZones ?? 0 }}</strong></span>
+                    <span>Employees in Zone: 
+                        <strong>{{ $employeesInZone ?? 0 }}/{{ $totalEmployees ?? 0 }}</strong>
+                    </span>
                 </div>
             </div>
         </div>
     </div>
+    
 </div>
 
 <!-- Biometric Authentication Overview -->
@@ -772,9 +778,10 @@
                         👆
                     </div>
                 </div>
-                <div class="stat-value">{{ $fingerprintUsers ?? '198' }}</div>
+                <div class="stat-value">{{ $fingerprintUsers }}</div>
                 <div class="stat-label">Fingerprint Enrolled</div>
             </div>
+            
             
             <div class="stat-card">
                 <div class="stat-header">
@@ -782,7 +789,7 @@
                         👤
                     </div>
                 </div>
-                <div class="stat-value">{{ $faceRecUsers ?? '156' }}</div>
+                <div class="stat-value">{{ $faceIdUsers }}</div>
                 <div class="stat-label">Face Recognition Enrolled</div>
             </div>
             
@@ -792,7 +799,7 @@
                         ⚠️
                     </div>
                 </div>
-                <div class="stat-value">{{ $pendingEnrollment ?? '42' }}</div>
+                <div class="stat-value">{{ $pendingEnrollment }}</div>
                 <div class="stat-label">Pending Enrollment</div>
             </div>
         </div>
@@ -828,41 +835,15 @@
                 </tr>
             </thead>
             <tbody id="activityLogTable">
-                <tr>
-                    <td>10:32 AM</td>
-                    <td>John Doe</td>
-                    <td>Clock In</td>
-                    <td>📍 Main Office</td>
-                    <td><span class="badge success">Success</span></td>
-                </tr>
-                <tr>
-                    <td>10:28 AM</td>
-                    <td>Sarah Wilson</td>
-                    <td>Clock In (Late)</td>
-                    <td>📍 Main Office</td>
-                    <td><span class="badge warning">Late</span></td>
-                </tr>
-                <tr>
-                    <td>10:15 AM</td>
-                    <td>Mike Johnson</td>
-                    <td>Leave Request</td>
-                    <td>🌐 Web Portal</td>
-                    <td><span class="badge info">Pending</span></td>
-                </tr>
-                <tr>
-                    <td>09:45 AM</td>
-                    <td>Admin</td>
-                    <td>Geofence Updated</td>
-                    <td>🌐 Admin Panel</td>
-                    <td><span class="badge success">Success</span></td>
-                </tr>
-                <tr>
-                    <td>09:30 AM</td>
-                    <td>Emily Davis</td>
-                    <td>Biometric Auth</td>
-                    <td>📱 Mobile App</td>
-                    <td><span class="badge success">Success</span></td>
-                </tr>
+                @foreach($recentActivities as $log)
+                    <tr>
+                        <td>{{ $log->created_at->format('h:i A') }}</td>
+                        <td>{{ $log->user->employee->name ?? $log->user->name ?? 'System' }}</td>
+                        <td>{{ $log->action }}</td>
+                        <td>{{ $log->ip_address ?? '🌐 System' }}</td>
+                        <td><span class="badge info">Logged</span></td>
+                    </tr>
+                @endforeach
             </tbody>
         </table>
     </div>
@@ -1121,12 +1102,12 @@ function openBiometricDashboard() {
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 24px;">
                     <div class="stat-card">
                         <div class="stat-icon" style="background: #dcfce7; color: var(--success-color);">👆</div>
-                        <div class="stat-value">198</div>
+                        <div class="stat-value">{{ $fingerprintUsers }}</div>
                         <div class="stat-label">Fingerprint Users</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon" style="background: #dbeafe; color: var(--primary-color);">👤</div>
-                        <div class="stat-value">156</div>
+                        <div class="stat-value">{{ $faceIdUsers }}</div>
                         <div class="stat-label">Face Recognition Users</div>
                     </div>
                 </div>
@@ -1162,25 +1143,28 @@ function openBiometricDashboard() {
                                 </tr>
                             </thead>
                             <tbody>
+                            @foreach($recentActivities as $log)
                                 <tr>
-                                    <td>John Doe</td>
-                                    <td>Fingerprint</td>
-                                    <td><span class="badge success">Active</span></td>
-                                    <td>Today</td>
+                                    <td>{{ $log->employee->user->name }}</td>
+                                    <td>
+                                        @if($log->type === 'fingerprint')
+                                            Fingerprint
+                                        @elseif($log->type === 'face')
+                                            Face Recognition
+                                        @else
+                                            Both
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ $log->status === 'active' ? 'success' : 'warning' }}">
+                                            {{ ucfirst($log->status) }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $log->created_at->diffForHumans() }}</td>
                                 </tr>
-                                <tr>
-                                    <td>Sarah Wilson</td>
-                                    <td>Face Recognition</td>
-                                    <td><span class="badge warning">Pending</span></td>
-                                    <td>Yesterday</td>
-                                </tr>
-                                <tr>
-                                    <td>Mike Johnson</td>
-                                    <td>Both</td>
-                                    <td><span class="badge success">Active</span></td>
-                                    <td>2 days ago</td>
-                                </tr>
-                            </tbody>
+                            @endforeach
+                        </tbody>
+
                         </table>
                     </div>
                 </div>

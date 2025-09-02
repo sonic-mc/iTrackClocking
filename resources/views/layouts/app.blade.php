@@ -585,11 +585,52 @@
                 <span>{{ auth()->user()->isClockedIn() ? 'Clocked In' : 'Clocked Out' }}</span>
             </div> --}}
 
-            <!-- Location Status -->
-            <div class="location-status" id="locationStatus">
-                <span>📍</span>
-                <span id="locationText">Checking location...</span>
-            </div>
+           <!-- Location Status -->
+        <div class="location-status" id="locationStatus">
+            <span>📍</span>
+            <span id="locationText">Checking location...</span>
+        </div>
+
+        <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const locationText = document.getElementById("locationText");
+
+            if ("geolocation" in navigator) {
+                // Watch position for realtime updates
+                navigator.geolocation.watchPosition(
+                    (position) => {
+                        const lat = position.coords.latitude.toFixed(6);
+                        const lng = position.coords.longitude.toFixed(6);
+
+                        locationText.textContent = `Lat: ${lat}, Lng: ${lng}`;
+                    },
+                    (error) => {
+                        switch (error.code) {
+                            case error.PERMISSION_DENIED:
+                                locationText.textContent = "Permission denied";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                locationText.textContent = "Location unavailable";
+                                break;
+                            case error.TIMEOUT:
+                                locationText.textContent = "Location request timed out";
+                                break;
+                            default:
+                                locationText.textContent = "Unknown error";
+                                break;
+                        }
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                locationText.textContent = "Geolocation not supported";
+            }
+        });
+        </script>
+
 
             <!-- Current Time -->
             <div class="text-sm text-secondary" id="currentTime"></div>

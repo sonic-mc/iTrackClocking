@@ -204,7 +204,7 @@
                 </div>
                 <div class="metric-value">{{ $presentCount }}</div>
                 <div class="h-1 bg-gray-100 rounded-full overflow-hidden">
-                    <div class="h-full bg-success-green" 
+                    <div class="h-full bg-success-green"
                          style="width: {{ $employeeCount > 0 ? round(($presentCount / $employeeCount) * 100) : 0 }}%">
                     </div>
                 </div>
@@ -235,7 +235,7 @@
                     <button class="tab-button active" onclick="switchTab('attendance')">
                         Today's Attendance
                     </button>
-                    <a href="{{ route('employees.attendance') }}" 
+                    <a href="{{ route('employees.attendance') }}"
                        class="ml-auto text-primary-blue hover:text-secondary-blue font-medium">
                         View All
                     </a>
@@ -293,7 +293,7 @@
                     <button class="tab-button active" onclick="switchTab('leaves')">
                         Leave Requests
                     </button>
-                    <a href="{{ route('leave.approve') }}" 
+                    <a href="{{ route('leave.approve') }}"
                        class="ml-auto text-primary-blue hover:text-secondary-blue font-medium">
                         View All
                     </a>
@@ -331,7 +331,7 @@
                                 </div>
                             </div>
                             <div class="mt-3 text-sm text-gray-500">
-                                {{ \Carbon\Carbon::parse($leave->start_date)->format('M j') }} - 
+                                {{ \Carbon\Carbon::parse($leave->start_date)->format('M j') }} -
                                 {{ \Carbon\Carbon::parse($leave->end_date)->format('M j, Y') }}
                             </div>
                         </div>
@@ -362,16 +362,16 @@ function switchTab(tabId) {
 document.addEventListener('DOMContentLoaded', function() {
     function updateTime() {
         const now = new Date();
-        const timeString = now.toLocaleTimeString('en-US', { 
-            hour: 'numeric', 
+        const timeString = now.toLocaleTimeString('en-US', {
+            hour: 'numeric',
             minute: '2-digit',
-            hour12: true 
+            hour12: true
         });
-        const dateString = now.toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+        const dateString = now.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
         
         const timeElement = document.querySelector('[id$="current-time"]');

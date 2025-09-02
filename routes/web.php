@@ -13,9 +13,6 @@ use App\Http\Controllers\BreakController;
 use App\Http\Controllers\OvertimeLogController;
 use App\Http\Controllers\LeaveRequestController;
 
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware('auth')
-    ->name('dashboard');
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -31,31 +28,9 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::middleware(['auth', 'role:employee'])->group(function () {
-    Route::get('/employee/dashboard', [App\Http\Controllers\EmployeeController::class, 'dashboard'])->name('employee.dashboard');
-    Route::post('/employee/clock', [App\Http\Controllers\EmployeeController::class, 'clock'])->name('employee.clock');
-});
 
-
-// Manager-only dashboard
-Route::middleware(['auth', 'role:manager'])->group(function () {
-    Route::get('/manager/dashboard', function () {
-        return view('manager.dashboard');
-    })->name('manager.dashboard');
-});
-
-// Admin-only dashboard
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
-});
-
-// Admin + Manager routes
-Route::middleware(['auth', 'role:admin,manager'])->group(function () {
-    Route::get('/reports', function () {
-        return view('reports.index');
-    })->name('reports.index');
+Route::middleware(['auth', 'role:employee,manager,admin'])->group(function () {
+    Route::post('/employee/clock', [EmployeeController::class, 'clock'])->name('employee.clock');
 });
 
 
@@ -85,11 +60,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/clock-in', [AttendanceLogController::class, 'clockIn'])->name('clock-in');
     Route::post('/clock-out', [AttendanceLogController::class, 'clockOut'])->name('clock-out');
     Route::get('/history', [AttendanceLogController::class, 'history'])->name('history');
-});
-
-
-Route::middleware(['auth', 'role:employee'])->group(function () {
-    Route::post('/employee/clock', [EmployeeController::class, 'clock'])->name('employee.clock');
 });
 
 

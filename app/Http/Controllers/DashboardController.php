@@ -46,6 +46,7 @@ class DashboardController extends Controller
                 ->latest()
                 ->take(5)
                 ->get();
+                
 
             return view('manager.dashboard', compact(
                 'user',

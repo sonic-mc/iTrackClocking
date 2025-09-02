@@ -442,15 +442,15 @@
             </div>
             <div class="text-right">
                 <div class="stat-change positive">
-                    ↗ +12 this month
+                    ↗ +{{ $newEmployeesThisMonth ?? 0 }} this month
                 </div>
             </div>
         </div>
-        <div class="stat-value">{{ $totalEmployees ?? '248' }}</div>
+        <div class="stat-value">{{ $totalEmployees ?? 0 }}</div>
         <div class="stat-label">Total Employees</div>
     </div>
 
-    <!-- Currently Clocked In -->
+   <!-- Currently Clocked In -->
     <div class="stat-card">
         <div class="stat-header">
             <div class="stat-icon" style="background: #dcfce7; color: var(--success-color);">
@@ -458,15 +458,16 @@
             </div>
             <div class="text-right">
                 <div class="stat-change positive">
-                    ↗ 89% attendance rate
+                    ↗ {{ $attendanceRate }}% attendance rate
                 </div>
             </div>
         </div>
-        <div class="stat-value">{{ $currentlyClocked ?? '187' }}</div>
+        <div class="stat-value">{{ $currentlyClocked ?? 0 }}</div>
         <div class="stat-label">Currently Clocked In</div>
     </div>
 
-    <!-- Late Arrivals Today -->
+
+   <!-- Late Arrivals Today -->
     <div class="stat-card">
         <div class="stat-header">
             <div class="stat-icon" style="background: #fef3c7; color: var(--warning-color);">
@@ -478,11 +479,12 @@
                 </div>
             </div>
         </div>
-        <div class="stat-value">{{ $lateArrivals ?? '12' }}</div>
+        <div class="stat-value">{{ $lateArrivals ?? 0 }}</div>
         <div class="stat-label">Late Arrivals Today</div>
     </div>
 
-    <!-- Overtime Hours -->
+
+   <!-- Overtime Hours -->
     <div class="stat-card">
         <div class="stat-header">
             <div class="stat-icon" style="background: #fecaca; color: var(--danger-color);">
@@ -490,24 +492,26 @@
             </div>
             <div class="text-right">
                 <div class="stat-change positive">
-                    ↗ +23% this week
+                    ↗ +1% this week
                 </div>
             </div>
         </div>
-        <div class="stat-value">{{ $overtimeHours ?? '342' }}h</div>
+        <div class="stat-value">{{ $overtimeHours ?? 0 }}h</div>
         <div class="stat-label">Weekly Overtime</div>
     </div>
 
-    <!-- Pending Leave Requests -->
+
+   <!-- Pending Leave Requests -->
     <div class="stat-card">
         <div class="stat-header">
             <div class="stat-icon" style="background: #e0e7ff; color: #6366f1;">
                 📝
             </div>
         </div>
-        <div class="stat-value">{{ $pendingLeaves ?? '8' }}</div>
+        <div class="stat-value">{{ $pendingLeaves ?? 0 }}</div>
         <div class="stat-label">Pending Leave Requests</div>
     </div>
+
 
     <!-- Geofence Violations -->
     <div class="stat-card">
@@ -521,7 +525,7 @@
                 </div>
             </div>
         </div>
-        <div class="stat-value">{{ $geofenceViolations ?? '3' }}</div>
+        <div class="stat-value">{{ $geofenceViolations ?? 0 }}</div>
         <div class="stat-label">Geofence Violations</div>
     </div>
 </div>
@@ -533,7 +537,7 @@
     </div>
     <div class="card-body">
         <div class="quick-actions-grid">
-            <a href="{{ route('employees.create') }}" class="quick-action-btn">
+            <a href="{{ route('admin.employees.create') }}" class="quick-action-btn">
                 <div class="quick-action-icon">👤➕</div>
                 <div class="quick-action-label">Add Employee</div>
             </a>

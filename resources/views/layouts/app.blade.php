@@ -12,9 +12,9 @@
     <style>
         /* Reset and Base Styles */
         * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         :root {
@@ -172,67 +172,105 @@
             box-shadow: var(--shadow-md);
         }
 
-        /* Sidebar */
+       /* Sidebar */
         .sidebar {
+            --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
             position: fixed;
             top: var(--header-height);
             left: 0;
             width: var(--sidebar-width);
             height: calc(100vh - var(--header-height));
-            background: white;
-            border-right: 1px solid #e2e8f0;
+            background-color: var(--sidebar-bg, white);
+            border-right: 1px solid var(--border-color, #e2e8f0);
             overflow-y: auto;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s var(--transition-timing),
+                        width 0.3s var(--transition-timing);
             z-index: 999;
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb, #cbd5e1) transparent;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background-color: var(--scrollbar-thumb, #cbd5e1);
+            border-radius: 3px;
         }
 
         .sidebar-content {
-            padding: 24px 0;
+            padding: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
         }
 
         .nav-section {
-            margin-bottom: 32px;
+            margin-bottom: 2rem;
         }
 
         .nav-title {
-            font-size: 12px;
+            font-size: 0.75rem;
             font-weight: 600;
             color: var(--secondary-color);
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            padding: 0 24px;
-            margin-bottom: 12px;
+            padding: 0 1.5rem;
+            margin-bottom: 0.75rem;
         }
 
         .nav-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 24px;
-            color: #475569;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-color, #475569);
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: all 0.2s ease-in-out;
             border-right: 3px solid transparent;
             position: relative;
+            cursor: pointer;
         }
 
         .nav-item:hover {
-            background: #f8fafc;
+            background-color: var(--hover-bg, #f8fafc);
             color: var(--primary-color);
             border-right-color: var(--primary-color);
         }
 
         .nav-item.active {
-            background: #eff6ff;
+            background-color: var(--active-bg, #eff6ff);
             color: var(--primary-color);
             border-right-color: var(--primary-color);
             font-weight: 600;
         }
 
         .nav-icon {
-            font-size: 20px;
-            width: 20px;
-            text-align: center;
+            font-size: 1.25rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .sidebar,
+            .nav-item {
+                transition: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
         }
 
         /* Quick Actions */
@@ -534,7 +572,7 @@
             <button class="menu-toggle" onclick="toggleSidebar()">
                 <span id="menu-icon">☰</span>
             </button>
-            <a href="{{ route('dashboard') }}" class="logo">
+            <a href="{{ route('home') }}" class="logo">
                 <div class="logo-icon">⏰</div>
                 <span>iTrack Clocking</span>
             </a>
@@ -589,7 +627,7 @@
                     @endif
                 
                     <hr>
-                    <a href="{{ route('logout') }}" 
+                    <a href="{{ route('logout') }}"
                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         Logout
                     </a>
@@ -620,7 +658,7 @@
                 <!-- Main Menu -->
                 <div class="nav-section">
                     <div class="nav-title">Main</div>
-                    <a href="{{ route('dashboard') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <a href="{{ route('home') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                         <span class="nav-icon">📊</span>
                         Dashboard
                     </a>

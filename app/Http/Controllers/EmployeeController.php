@@ -128,17 +128,54 @@ class EmployeeController extends Controller
     {
         //
     }
-
     public function clock(Request $request)
 {
     $user = Auth::user();
-    $employee = $user->employee; // now this will work
+    $employee = $user->employee;
 
     if (!$employee) {
         return redirect()->back()->with('error', 'Employee record not found.');
     }
 
-    // Find today's attendance log if it exists
+    // Check if user has any clock-in authentication set up
+    if (!$user->biometric_data || empty($user->biometric_data)) {
+        return redirect()->route('biometric.setup')
+            ->with('info', 'You need to set up your biometric/passcode authentication before clocking in.');
+    }
+
+    // Validate auth input
+    $request->validate([
+        'auth_type'  => 'required|in:passcode,webauthn',
+        'auth_value' => 'required', // Passcode or WebAuthn response object
+    ]);
+
+    $authType  = $request->input('auth_type');
+    $authValue = $request->input('auth_value');
+    $isValidAuth = false;
+
+    if ($authType === 'passcode' && isset($user->biometric_data['passcode'])) {
+        $isValidAuth = hash_equals($user->biometric_data['passcode'], $authValue);
+    } elseif ($authType === 'webauthn' && isset($user->biometric_data['webauthn'])) {
+        // $authValue should be JSON from navigator.credentials.get()
+        $webauthnCredentials = $user->biometric_data['webauthn'];
+        
+        // Verify WebAuthn assertion against saved credentials (using a WebAuthn library)
+        foreach ($webauthnCredentials as $credential) {
+            try {
+                // Example using a WebAuthn PHP library
+                $isValidAuth = WebAuthn::verifyAssertion($authValue, $credential);
+                if ($isValidAuth) break;
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+    }
+
+    if (!$isValidAuth) {
+        return redirect()->back()->with('error', 'Authentication failed. Clock-in aborted.');
+    }
+
+    // Find today's attendance log
     $attendance = AttendanceLog::where('employee_id', $employee->id)
         ->whereDate('clock_in_time', today())
         ->first();
@@ -152,7 +189,7 @@ class EmployeeController extends Controller
 
         return redirect()->back()->with('success', 'You have clocked in successfully.');
     } else {
-        // If already clocked in but no clock out, clock out
+        // Clock Out if already clocked in
         if (is_null($attendance->clock_out_time)) {
             $attendance->update([
                 'clock_out_time' => now(),
@@ -164,5 +201,4 @@ class EmployeeController extends Controller
         }
     }
 }
-
 }

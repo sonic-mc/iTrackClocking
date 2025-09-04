@@ -31,6 +31,18 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'role:employee,manager,admin'])->group(function () {
     Route::post('/employee/clock', [EmployeeController::class, 'clock'])->name('employee.clock');
+    Route::get('/biometric/setup', [App\Http\Controllers\BiometricController::class, 'setup'])->name('biometric.setup');
+    Route::post('/biometric/setup', [App\Http\Controllers\BiometricController::class, 'store'])->name('biometric.store');
+    Route::post('/biometric/register', [BiometricController::class, 'register'])->name('biometric.register');
+    Route::get('/biometric/register/options', [BiometricController::class, 'registerOptions'])
+    ->name('biometric.register.options');
+
+Route::post('/biometric/register/complete', [BiometricController::class, 'registerComplete'])
+    ->name('biometric.register.complete');
+
+   // WebAuthn authentication (clock in)
+    Route::post('/biometric/authenticate', [BiometricController::class, 'authenticate'])->name('biometric.authenticate');
+
 });
 
 

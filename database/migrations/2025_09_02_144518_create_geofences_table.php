@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('geofences', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('branch_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->decimal('latitude', 10, 7);
             $table->decimal('longitude', 10, 7);

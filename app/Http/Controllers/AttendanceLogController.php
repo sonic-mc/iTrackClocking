@@ -91,12 +91,28 @@ class AttendanceLogController extends Controller
     public function history()
     {
         $user = Auth::user();
-
-        // Fetch all logs for this user (paginate for large sets)
-        $attendanceLogs = AttendanceLog::where('employee_id', $user->id)
-            ->orderBy('created_at', 'desc')
+        $employeeId = $user->employee->id ?? null;
+    
+        if (!$employeeId) {
+            return redirect()->back()->with('error', 'Employee record not found.');
+        }
+    
+        $attendanceLogs = AttendanceLog::where('employee_id', $employeeId)
+            ->select([
+                'id',
+                'clock_in_time',
+                'clock_out_time',
+                'location_lat',
+                'location_lng',
+                'geofence_status',
+                'device_info',
+                'created_at',
+                'updated_at'
+            ])
+            ->orderByDesc('created_at')
             ->paginate(10);
-
+    
         return view('employee.history', compact('user', 'attendanceLogs'));
     }
+    
 }

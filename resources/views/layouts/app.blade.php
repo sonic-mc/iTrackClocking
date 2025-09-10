@@ -11,7 +11,7 @@
     
     <style>
         /* Reset and Base Styles */
-        * { 
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -33,7 +33,7 @@
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
 
-        body { 
+        body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #f8fafc;
             color: #1e293b;
@@ -579,11 +579,7 @@
         </div>
 
         <div class="header-right">
-            <!-- Clock Status -->
-            {{-- <div class="clock-status {{ auth()->user()->isClockedIn() ? 'clocked-in' : 'clocked-out' }}" id="clockStatus">
-                <div class="status-dot {{ auth()->user()->isClockedIn() ? 'active' : 'inactive' }}"></div>
-                <span>{{ auth()->user()->isClockedIn() ? 'Clocked In' : 'Clocked Out' }}</span>
-            </div> --}}
+           
 
            <!-- Location Status -->
         <div class="location-status" id="locationStatus">
@@ -660,7 +656,7 @@
                         <div class="text-xs text-secondary">{{ auth()->user()->role ?? 'Employee' }}</div>
                     </div>
                     <hr>
-                    <a href="{{ route('profile') }}">Profile Settings</a>
+                    <a href="{{ route('profile.index') }}">Profile Settings</a>
                     <a href="{{ route('attendance.history') }}">My Attendance</a>
                 
                     @if(auth()->user()->isManager())
@@ -680,19 +676,143 @@
     @auth
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-content">
-            <!-- Quick Clock Actions -->
-            <div class="quick-actions">
-                <button class="quick-clock-btn clock-in-btn" onclick="quickClockIn()" style="{{ auth()->user()->isClockedIn() ? 'display:none' : '' }}">
-                    <span>🕐</span>
-                    Clock In
+          <!-- Quick Clock Action -->
+          <div class="quick-actions">
+            <form id="clock-form" method="POST" action="{{ route('employee.clock') }}">
+                @csrf
+                <input type="hidden" name="action" value="{{ auth()->user()->isClockedIn() ? 'out' : 'in' }}">
+                <input type="hidden" name="device_info" value="{{ request()->header('User-Agent') }}">
+                <input type="hidden" name="location_lat" id="location_lat">
+                <input type="hidden" name="location_lng" id="location_lng">
+        
+                <button type="submit" class="quick-clock-btn" id="clock-button">
+                    <span>🕐</span> <span id="clock-label">{{ auth()->user()->isClockedIn() ? 'Clock Out' : 'Clock In' }}</span>
                 </button>
-                <button class="quick-clock-btn clock-out-btn" onclick="quickClockOut()" style="{{ !auth()->user()->isClockedIn() ? 'display:none' : '' }}">
-                    <span>🕐</span>
-                    Clock Out
-                </button>
-            </div>
-            @endauth
+            </form>
+        </div>
+        
 
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("clock-form");
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? "{{ csrf_token() }}";
+            const actionInput = form.querySelector("input[name='action']");
+            const label = document.getElementById("clock-label");
+        
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+        
+                const action = actionInput.value; // ✅ Use value, not element
+        
+                // Confirm only if clocking out
+                if (action === 'out') {
+                    const confirmed = await Swal.fire({
+                        title: "Are you sure?",
+                        text: "Do you want to clock out?",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonText: "Yes, Clock Out",
+                    }).then(r => r.isConfirmed);
+        
+                    if (!confirmed) return;
+                }
+        
+                await submitClockForm(action);
+            });
+        
+            async function submitClockForm(action) {
+                const formData = new FormData(form);
+                formData.set('action', action); // ✅ Explicitly set action value
+        
+                Swal.fire({ title: "Processing...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        
+                try {
+                    const res = await fetch(form.getAttribute('action'), { // ✅ Use getAttribute to avoid DOM confusion
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrf,
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        credentials: 'same-origin',
+                        body: formData
+                    });
+        
+                    let data;
+                    try {
+                        data = await res.json();
+                    } catch {
+                        const text = await res.text().catch(() => '');
+                        console.error('Non-JSON response:', res.status, text.slice(0, 1000));
+                        Swal.close();
+                        Swal.fire("Server error", "Unexpected server response. Check DevTools -> Network.", "error");
+                        return;
+                    }
+        
+                    Swal.close();
+        
+                    if (data.status === 'confirm') {
+                        const ans = await Swal.fire({
+                            title: "Already clocked in",
+                            text: data.message || "Do you want to clock out instead?",
+                            icon: "question",
+                            showCancelButton: true,
+                            confirmButtonText: "Yes, Clock Out",
+                        });
+        
+                        if (ans.isConfirmed) {
+                            return await submitClockForm('out'); // ✅ Re-submit with correct action
+                        }
+                        return;
+                    }
+        
+                    const icon = data.status === 'success' ? 'success'
+                               : data.status === 'warning' ? 'warning'
+                               : data.status === 'error' ? 'error' : 'info';
+        
+                    await Swal.fire(data.message || "Done", "", icon);
+        
+                    if (data.status === 'success') toggleButtonState();
+                } catch (err) {
+                    console.error('Fetch error:', err);
+                    Swal.close();
+                    Swal.fire("Network error", "Could not reach server. Check your connection.", "error");
+                }
+            }
+        
+            function toggleButtonState() {
+                if (!label || !actionInput) return;
+        
+                if (actionInput.value === 'in') {
+                    label.textContent = 'Clock Out';
+                    actionInput.value = 'out';
+                } else {
+                    label.textContent = 'Clock In';
+                    actionInput.value = 'in';
+                }
+            }
+        
+            // Capture geolocation
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    document.getElementById("location_lat").value = position.coords.latitude;
+                    document.getElementById("location_lng").value = position.coords.longitude;
+                }, function (err) {
+                    console.warn('Geolocation denied or failed:', err);
+                }, { timeout: 8000 });
+            }
+        });
+        </script>
+        
+
+
+<script>
+    document.getElementById("clock-label").textContent = "{{ auth()->user()->isClockedIn() ? 'Clock Out' : 'Clock In' }}";
+    document.querySelector("input[name='action']").value = "{{ auth()->user()->isClockedIn() ? 'out' : 'in' }}";
+</script>
+
+    
 
             <!-- Navigation Menu -->
             <nav>
@@ -702,15 +822,7 @@
                     <a href="{{ route('home') }}" class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                         <span class="nav-icon">📊</span>
                         Dashboard
-                    </a>
-                    <form action="{{ route('employee.clock') }}" method="POST" style="display:inline;">
-                        @csrf
-                        <button type="submit" class="nav-item {{ request()->routeIs('employee.clock') ? 'active' : '' }}" 
-                                style="background:none; border:none; cursor:pointer; width:100%; text-align:left;">
-                            <span class="nav-icon">⏰</span>
-                            Clock In/Out
-                        </button>
-                    </form>
+    
                     <a href="{{ route('attendance.history') }}" class="nav-item {{ request()->routeIs('attendance.history') ? 'active' : '' }}">
                         <span class="nav-icon">📅</span>
                         My Attendance
@@ -722,7 +834,7 @@
                     <div class="nav-title">Time Management</div>
                     <a href="{{ route('shifts.index') }}" class="nav-item {{ request()->routeIs('shifts.*') ? 'active' : '' }}">
                         <span class="nav-icon">🔄</span>
-                        Shift Schedule
+                        Upcoming Shifts
                     </a>
                     <a href="#" class="nav-item {{ request()->routeIs('breaks.*') ? 'active' : '' }}">
                         <span class="nav-icon">☕</span>
@@ -930,10 +1042,10 @@
         // Update current time
         function updateTime() {
             const now = new Date();
-            const timeString = now.toLocaleTimeString('en-US', { 
-                hour12: true, 
-                hour: 'numeric', 
-                minute: '2-digit' 
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour12: true,
+                hour: 'numeric',
+                minute: '2-digit'
             });
             document.getElementById('currentTime').textContent = timeString;
         }
@@ -979,90 +1091,7 @@
             }
         }
 
-        // Quick Clock Actions
-        function quickClockIn() {
-            if (confirm('Are you sure you want to clock in?')) {
-                const btn = event.target;
-                btn.innerHTML = '<span class="loading-spinner"></span> Clocking In...';
-                btn.disabled = true;
-                
-                fetch('/api/clock-in', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('Successfully clocked in!', 'success');
-                        updateClockStatus(true);
-                    } else {
-                        showNotification(data.message || 'Failed to clock in', 'error');
-                    }
-                })
-                .catch(() => {
-                    showNotification('Network error. Please try again.', 'error');
-                })
-                .finally(() => {
-                    btn.innerHTML = '<span>🕐</span> Clock In';
-                    btn.disabled = false;
-                });
-            }
-        }
-
-        function quickClockOut() {
-            if (confirm('Are you sure you want to clock out?')) {
-                const btn = event.target;
-                btn.innerHTML = '<span class="loading-spinner"></span> Clocking Out...';
-                btn.disabled = true;
-
-                fetch('/api/clock-out', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        showNotification('Successfully clocked out!', 'success');
-                        updateClockStatus(false);
-                    } else {
-                        showNotification(data.message || 'Failed to clock out', 'error');
-                    }
-                })
-                .catch(() => {
-                    showNotification('Network error. Please try again.', 'error');
-                })
-                .finally(() => {
-                    btn.innerHTML = '<span>🕐</span> Clock Out';
-                    btn.disabled = false;
-                });
-            }
-        }
-
-        // Update UI clock status
-        function updateClockStatus(isClockedIn) {
-            const clockStatus = document.getElementById('clockStatus');
-            const statusDot = clockStatus.querySelector('.status-dot');
-
-            if (isClockedIn) {
-                clockStatus.className = 'clock-status clocked-in';
-                statusDot.className = 'status-dot active';
-                clockStatus.querySelector('span').textContent = 'Clocked In';
-                document.querySelector('.clock-in-btn').style.display = 'none';
-                document.querySelector('.clock-out-btn').style.display = 'block';
-            } else {
-                clockStatus.className = 'clock-status clocked-out';
-                statusDot.className = 'status-dot inactive';
-                clockStatus.querySelector('span').textContent = 'Clocked Out';
-                document.querySelector('.clock-in-btn').style.display = 'block';
-                document.querySelector('.clock-out-btn').style.display = 'none';
-            }
-        }
+        
 
         // Notification System
         function showNotification(message, type = 'success') {
@@ -1079,12 +1108,14 @@
             }, 3000);
         }
 
-        // Init on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            updateTime();
-            setInterval(updateTime, 60000); // update every minute
-            checkGeolocation();
-        });
+        // // Init on page load
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     updateTime();
+        //     setInterval(updateTime, 60000); // update every minute
+        //     checkGeolocation();
+        // });
+
+        @endif
     </script>
 </body>
 </html>

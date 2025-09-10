@@ -54,7 +54,8 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile');
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     Route::get('/attendance/history', function () {
@@ -69,9 +70,7 @@ Route::middleware('auth')->group(function () {
 
   // Attendance routes
   Route::prefix('attendance')->name('attendance.')->group(function () {
-    Route::post('/clock-in', [AttendanceLogController::class, 'clockIn'])->name('clock-in');
-    Route::post('/clock-out', [AttendanceLogController::class, 'clockOut'])->name('clock-out');
-    Route::get('/history', [AttendanceLogController::class, 'history'])->name('history');
+  Route::get('/history', [AttendanceLogController::class, 'history'])->name('history');
 });
 
 
@@ -93,8 +92,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin, manager'])->group(function () {
     Route::get('/shifts/manage', [ShiftController::class, 'index'])->name('shifts.manage');
+    Route::post('/shifts/employees/assign-shift', [ShiftController::class, 'assignShift'])->name('employees.assignShift');
     Route::post('/shifts/store', [ShiftController::class, 'store'])->name('shifts.store');
     Route::put('/shifts/{id}', [ShiftController::class, 'update'])->name('shifts.update');
     Route::delete('/shifts/{id}', [ShiftController::class, 'destroy'])->name('shifts.destroy');

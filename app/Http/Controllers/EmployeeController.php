@@ -10,15 +10,25 @@ use App\Models\Notification;
 use App\Models\User;
 use App\Models\Branch;
 use App\Models\Department;
+use App\Models\Geofence;
+use App\Models\GeofenceViolation;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Shift;
 
 class EmployeeController extends Controller
 {
     public function index()
     {
-        $employees = Employee::with(['user', 'branch', 'department'])->orderBy('created_at', 'desc')->get();
-        return view('manager.employees', compact('employees'));
+        $employees = Employee::with(['user', 'branch', 'department'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    
+        $shifts = Shift::orderBy('start_time')->get();
+        $today = now()->toDateString();
+    
+        return view('manager.employees', compact('employees', 'shifts', 'today'));
     }
+    
     
    
     // Show form to create an employee from an existing user
@@ -128,77 +138,146 @@ class EmployeeController extends Controller
     {
         //
     }
+    
     public function clock(Request $request)
-{
-    $user = Auth::user();
-    $employee = $user->employee;
-
-    if (!$employee) {
-        return redirect()->back()->with('error', 'Employee record not found.');
-    }
-
-    // Check if user has any clock-in authentication set up
-    if (!$user->biometric_data || empty($user->biometric_data)) {
-        return redirect()->route('biometric.setup')
-            ->with('info', 'You need to set up your biometric/passcode authentication before clocking in.');
-    }
-
-    // Validate auth input
-    $request->validate([
-        'auth_type'  => 'required|in:passcode,webauthn',
-        'auth_value' => 'required', // Passcode or WebAuthn response object
-    ]);
-
-    $authType  = $request->input('auth_type');
-    $authValue = $request->input('auth_value');
-    $isValidAuth = false;
-
-    if ($authType === 'passcode' && isset($user->biometric_data['passcode'])) {
-        $isValidAuth = hash_equals($user->biometric_data['passcode'], $authValue);
-    } elseif ($authType === 'webauthn' && isset($user->biometric_data['webauthn'])) {
-        // $authValue should be JSON from navigator.credentials.get()
-        $webauthnCredentials = $user->biometric_data['webauthn'];
-        
-        // Verify WebAuthn assertion against saved credentials (using a WebAuthn library)
-        foreach ($webauthnCredentials as $credential) {
-            try {
-                // Example using a WebAuthn PHP library
-                $isValidAuth = WebAuthn::verifyAssertion($authValue, $credential);
-                if ($isValidAuth) break;
-            } catch (\Exception $e) {
-                continue;
-            }
+    {
+        $user = Auth::user();
+        $employee = $user->employee;
+    
+        if (!$employee) {
+            return response()->json(['status' => 'error', 'message' => 'Employee record not found.'], 400);
         }
-    }
-
-    if (!$isValidAuth) {
-        return redirect()->back()->with('error', 'Authentication failed. Clock-in aborted.');
-    }
-
-    // Find today's attendance log
-    $attendance = AttendanceLog::where('employee_id', $employee->id)
-        ->whereDate('clock_in_time', today())
-        ->first();
-
-    if (!$attendance) {
-        // Clock In
-        AttendanceLog::create([
-            'employee_id'   => $employee->id,
-            'clock_in_time' => now(),
+    
+        $request->validate([
+            'action'        => 'required|in:in,out',
+            'location_lat'  => 'nullable|numeric|between:-90,90',
+            'location_lng'  => 'nullable|numeric|between:-180,180',
+            'device_info'   => 'nullable|string|max:255',
         ]);
-
-        return redirect()->back()->with('success', 'You have clocked in successfully.');
-    } else {
-        // Clock Out if already clocked in
-        if (is_null($attendance->clock_out_time)) {
-            $attendance->update([
-                'clock_out_time' => now(),
-            ]);
-
-            return redirect()->back()->with('success', 'You have clocked out successfully.');
-        } else {
-            return redirect()->back()->with('info', 'You already clocked in and out today.');
+    
+        $action      = $request->input('action');
+        $locationLat = $request->input('location_lat');
+        $locationLng = $request->input('location_lng');
+        $deviceInfo  = $request->input('device_info');
+    
+        // Check geofence
+        $geofenceStatus = ($locationLat && $locationLng)
+            ? $this->isWithinGeofence($locationLat, $locationLng, $employee->id)
+            : true;
+    
+        // Get today's attendance record
+        $attendance = AttendanceLog::where('employee_id', $employee->id)
+            ->whereDate('created_at', now()->toDateString())
+            ->first();
+    
+        /** ---------------- CLOCK IN ---------------- **/
+        if ($action === 'in') {
+            if ($attendance && $attendance->clock_in_time) {
+                if (!$attendance->clock_out_time) {
+                    return response()->json([
+                        'status'  => 'confirm',
+                        'message' => 'You are already clocked in. Do you want to clock out instead?'
+                    ]);
+                }
+    
+                return response()->json(['status' => 'info', 'message' => 'You already clocked in today.']);
+            }
+    
+            if (!$attendance) {
+                $attendance = new AttendanceLog();
+                $attendance->employee_id     = $employee->id;
+                $attendance->location_lat    = $locationLat;
+                $attendance->location_lng    = $locationLng;
+                $attendance->device_info     = $deviceInfo;
+                $attendance->geofence_status = $geofenceStatus;
+            }
+    
+            $attendance->clock_in_time = now();
+            $attendance->save();
+    
+            return response()->json(['status' => 'success', 'message' => '✅ You have clocked in successfully.']);
         }
+    
+        /** ---------------- CLOCK OUT ---------------- **/
+        if ($action === 'out') {
+            if (!$attendance || !$attendance->clock_in_time) {
+                return response()->json(['status' => 'error', 'message' => 'You must clock in before clocking out.']);
+            }
+    
+            if ($attendance->clock_out_time) {
+                return response()->json(['status' => 'info', 'message' => 'You already clocked out today.']);
+            }
+    
+            $attendance->clock_out_time    = now();
+            $attendance->location_lat      = $locationLat;
+            $attendance->location_lng      = $locationLng;
+            $attendance->device_info       = $deviceInfo;
+            $attendance->geofence_status   = $geofenceStatus;
+            $attendance->save();
+    
+            // Log geofence violation if outside bounds
+            if (!$geofenceStatus) {
+                GeofenceViolation::create([
+                    'employee_id'       => $employee->id,
+                    'attendance_log_id' => $attendance->id,
+                    'latitude'          => $locationLat,
+                    'longitude'         => $locationLng,
+                    'device_info'       => $deviceInfo,
+                    'violation_time'    => now(),
+                    'violation_type'    => 'clock_out',
+                ]);
+    
+                return response()->json([
+                    'status'  => 'warning',
+                    'message' => '⚠️ Clock-out recorded, but you were outside the geofence.'
+                ]);
+            }
+    
+            return response()->json(['status' => 'success', 'message' => '✅ You have clocked out successfully.']);
+        }
+    
+        return response()->json(['status' => 'error', 'message' => 'Invalid action.'], 400);
     }
-}
+    
+    
+    protected function isWithinGeofence($lat, $lng, $employeeId)
+    {
+        $employee = Employee::with('branch.geofence')->find($employeeId);
+    
+        if (!$employee || !$employee->branch || !$employee->branch->geofence) {
+            \Log::warning("No geofence found for employee ID {$employeeId}");
+            return true; // fallback: allow if no geofence defined
+        }
+    
+        $geofence = $employee->branch->geofence;
+    
+        // Example: geofence has center (lat,lng) and radius in meters
+        $distance = $this->haversineDistance(
+            $lat,
+            $lng,
+            $geofence->latitude,
+            $geofence->longitude
+        );
+    
+        return $distance <= $geofence->radius; // true if within radius
+    }
+    
+
+    protected function haversineDistance($lat1, $lng1, $lat2, $lng2)
+    {
+        $earthRadius = 6371000; // meters
+    
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+    
+        $a = sin($dLat/2) * sin($dLat/2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($dLng/2) * sin($dLng/2);
+    
+        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        return $earthRadius * $c; // distance in meters
+    }
+    
+
+    
 }

@@ -13,7 +13,7 @@
 <h1 style="font-size: 24px; margin-bottom: 20px;">Welcome, {{ $user->name }}</h1>
 
 <!-- Clock In / Clock Out -->
-<div style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;">
+{{-- <div style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;">
     <h2 style="font-size:18px; margin-bottom:10px;">Clock In / Clock Out</h2>
     <p style="color:#6b7280; margin-bottom:10px;">Click below to log your attendance</p>
     <form action="{{ route('employee.clock') }}" method="POST">
@@ -22,7 +22,7 @@
             Clock In / Out
         </button>
     </form>
-</div>
+</div> --}}
 
 <!-- Recent Attendance Logs -->
 <div style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;">

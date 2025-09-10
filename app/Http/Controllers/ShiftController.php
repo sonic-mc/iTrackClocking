@@ -11,9 +11,36 @@ class ShiftController extends Controller
      * Display a listing of the resource.
      */
     public function index()
+{
+    $shifts = Shift::orderBy('start_time')->get(); // You can sort by name or start_time
+
+    return view('admin.shifts.manage', compact('shifts'));
+}
+
+
+    public function assignShift(Request $request)
     {
-        return view('admin.shifts.manage');
+        $request->validate([
+            'employee_id' => 'required|exists:employees,id',
+            'shift_id'    => 'required|exists:shifts,id',
+            'date'        => 'required|date',
+        ]);
+    
+        // Prevent duplicate assignment for same day
+        EmployeeShift::updateOrCreate(
+            [
+                'employee_id' => $request->employee_id,
+                'date'        => $request->date,
+            ],
+            [
+                'shift_id' => $request->shift_id,
+            ]
+        );
+    
+        return redirect()->back()->with('success', 'Shift assigned successfully.');
     }
+    
+
 
     /**
      * Show the form for creating a new resource.

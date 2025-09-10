@@ -12,14 +12,13 @@ class EmployeeShiftController extends Controller
      */
     public function index()
     {
-        $shifts = auth()->user()->shifts()
-            ->where('date', '>=', now()->toDateString())
-            ->orderBy('date', 'asc')
-            ->get();
-
+        $employees = Employee::with(['user', 'branch', 'department'])->get();
+        $shifts = Shift::orderBy('start_time')->get();
+        $today = now()->toDateString();
     
-        return view('time.shifts', compact('shifts'));
+        return view('manager.employees', compact('employees', 'shifts', 'today'));
     }
+    
     
 
     /**

@@ -21,6 +21,7 @@
                     <th class="border px-4 py-2">Position</th>
                     <th class="border px-4 py-2">Status</th>
                     <th class="border px-4 py-2 text-center">Actions</th>
+                    <th class="border px-4 py-2 text-center">Assign Shift</th>
                 </tr>
             </thead>
             <tbody>
@@ -39,6 +40,22 @@
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
+                        </form>
+                    </td>
+                    <td class="border px-4 py-2 text-center">
+                        <form action="{{ route('employees.assignShift') }}" method="POST" class="flex flex-col items-center">
+                            @csrf
+                            <input type="hidden" name="employee_id" value="{{ $employee->id }}">
+                            <input type="date" name="date" value="{{ $today ?? now()->format('Y-m-d') }}" class="border rounded px-2 py-1 text-sm mb-1" required>
+                            <select name="shift_id" class="border rounded px-2 py-1 text-sm mb-1" required>
+                                <option value="">Assign Shift</option>
+                                @foreach($shifts as $shift)
+                                    <option value="{{ $shift->id }}">
+                                        {{ $shift->name }} ({{ \Carbon\Carbon::parse($shift->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($shift->end_time)->format('H:i') }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600">Save</button>
                         </form>
                     </td>
                 </tr>

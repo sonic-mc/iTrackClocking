@@ -9,4 +9,10 @@ class Branch extends Model
 {
     use HasFactory;
     protected $fillable = ['name', 'address'];
+
+    public function geofence()
+{
+    return $this->hasOne(Geofence::class);
+}
+
 }

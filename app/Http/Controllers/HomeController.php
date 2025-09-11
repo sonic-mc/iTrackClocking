@@ -12,6 +12,8 @@ use App\Models\Shift;
 use App\Models\OvertimeLog;
 use Carbon\Carbon;
 use App\Models\AuditLog;
+use App\Models\Geofence;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -74,7 +76,7 @@ class HomeController extends Controller
                                 ->count();
 
             // Attendance rate
-            $attendanceRate = $totalEmployees > 0 
+            $attendanceRate = $totalEmployees > 0
                 ? round(($currentlyClocked / $totalEmployees) * 100, 1)
                 : 0;
 
@@ -86,6 +88,12 @@ class HomeController extends Controller
 
             // Overtime calculation for this week
             $overtimeHours = 0;
+
+            $zones = Geofence::select('name', 'latitude as lat', 'longitude as lng', 'radius')->get();
+            
+            $employeesInZoneData = AttendanceLog::where('geofence_status', true)
+            ->select('employee_id', 'location_lat as lat', 'location_lng as lng')
+            ->get();
 
             $logs = AttendanceLog::whereBetween('clock_in_time', [$weekStart, $weekEnd])
                     ->whereNotNull('clock_out_time')
@@ -103,9 +111,10 @@ class HomeController extends Controller
 
             $presentCount    = AttendanceLog::whereDate('clock_in_time', today())->count();
             $pendingLeaves   = LeaveRequest::where('status', 'pending')->count();
-            // $geofenceViolations = AttendanceLog::whereDate('clock_in_time', today())
-            //             ->where('geofence_status', true)
-            //             ->count();
+            
+            $geofenceViolations = AttendanceLog::whereDate('clock_in_time', today())
+            ->where('geofence_status', true)
+            ->count();
 
             $newNotifications = Notification::where('user_id', $user->id)
                                 ->where('status', 'unread')
@@ -153,6 +162,54 @@ class HomeController extends Controller
             ->take(10)
             ->get();
 
+            // Get today's logs with location
+            $todayLogs = AttendanceLog::whereDate('clock_in_time', today())
+            ->whereNotNull('location_lat')
+            ->whereNotNull('location_lng')
+            ->get();
+
+            // Helper to check if a point is inside a zone
+            function isInsideZone($lat1, $lng1, $lat2, $lng2, $radius) {
+                $earthRadius = 6371000; // meters
+                $dLat = deg2rad($lat2 - $lat1);
+                $dLng = deg2rad($lng2 - $lng1);
+                $a = sin($dLat/2) * sin($dLat/2) +
+                    cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+                    sin($dLng/2) * sin($dLng/2);
+                $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+                $distance = $earthRadius * $c;
+                return $distance <= $radius;
+            }
+
+            // Count stats
+            $inZone = 0;
+            $outOfZone = 0;
+            $violations = 0;
+            $employeesInZoneData = [];
+
+            foreach ($todayLogs as $log) {
+                $insideAnyZone = false;
+
+                foreach ($zones as $zone) {
+                    if (isInsideZone($log->location_lat, $log->location_lng, $zone->lat, $zone->lng, $zone->radius)) {
+                        $insideAnyZone = true;
+                        break;
+                    }
+                }
+
+                $employeesInZoneData[] = [
+                    'name' => $log->employee->user->name ?? 'Unknown',
+                    'lat' => $log->location_lat,
+                    'lng' => $log->location_lng,
+                    'in_zone' => $insideAnyZone
+                ];
+
+                $insideAnyZone ? $inZone++ : $outOfZone++;
+                if (!$log->geofence_status) $violations++;
+            }
+
+            $totalEmployees = $inZone + $outOfZone;
+
             return view('admin.dashboard',['dates' => $dates,
             'attendanceCounts' => $attendanceCounts], compact(
                 'user',
@@ -172,7 +229,14 @@ class HomeController extends Controller
                 'fingerprintUsers',
                 'faceIdUsers',
                 'pendingEnrollment',
-                'recentActivities'
+                'recentActivities',
+                'geofenceViolations',
+                'zones',
+                'employeesInZoneData',
+                'inZone',
+                'outOfZone',
+                'violations'
+                
                 
             ));
 

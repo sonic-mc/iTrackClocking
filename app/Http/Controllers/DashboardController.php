@@ -9,6 +9,9 @@ use App\Models\Notification;
 use App\Models\Employee;
 use App\Models\Shift;
 use App\Models\OvertimeLog;
+use App\Models\Geofence;
+use Illuminate\Http\Request;
+
 
 class DashboardController extends Controller
 {
@@ -16,15 +19,40 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $role = $user->role;
+       
 
         if ($role === 'admin') {
-            // Admin dashboard data
+            // Dashboard data
             $attendanceLogs = AttendanceLog::latest()->take(5)->get();
             $leaveRequests = LeaveRequest::latest()->take(5)->get();
             $notifications = Notification::where('user_id', $user->id)->latest()->take(5)->get();
-
-            return view('admin.dashboard', compact('user', 'attendanceLogs', 'leaveRequests', 'notifications'));
-        } elseif ($role === 'manager') {
+        
+            // Geofence zones
+            $zones = Geofence::select('name', 'latitude as lat', 'longitude as lng', 'radius')->get();
+        
+            // Optional: Employees in zone (if tracked)
+            $employeesInZoneData = Employee::where('is_in_zone', true)
+                ->select('name', 'latitude as lat', 'longitude as lng')
+                ->get();
+        
+            $activeZones = $zones->count();
+            $employeesInZone = $employeesInZoneData->count();
+            $totalEmployees = Employee::count();
+        
+            return view('admin.dashboard', compact(
+                'user',
+                'attendanceLogs',
+                'leaveRequests',
+                'notifications',
+                'zones',
+                'employeesInZoneData',
+                'activeZones',
+                'employeesInZone',
+                'totalEmployees'
+            ));
+        }
+        
+        elseif ($role === 'manager') {
             // Manager dashboard data
             $employeeCount   = Employee::count();
             $presentCount    = AttendanceLog::whereDate('clock_in_time', today())->count();

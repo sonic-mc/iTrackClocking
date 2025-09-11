@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\EmployeeShift;
 use Illuminate\Http\Request;
+use App\Models\Employee;
+use App\Models\Shift;
 
 class EmployeeShiftController extends Controller
 {

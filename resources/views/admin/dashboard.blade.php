@@ -686,12 +686,41 @@
     </div>
 </div>
 
-<div class="dashboard-grid">
-   <!-- Attendance Analytics Chart -->
-<div class="chart-container">
-    <h3 class="card-title" style="margin-bottom: 20px;">Weekly Attendance Trends</h3>
-    <canvas id="attendanceChart"></canvas>
+<<div class="dashboard-grid" style="display: flex; gap: 24px; flex-wrap: wrap;">
+    
+    <!-- Weekly Attendance Trends -->
+    <div class="card" style="flex: 1; min-width: 400px;">
+        <div class="card-header">
+            <h3 class="card-title">Weekly Attendance Trends</h3>
+        </div>
+        <div class="card-body">
+            <canvas id="attendanceChart" style="width: 100%; height: 400px;"></canvas>
+        </div>
+    </div>
+
+    <!-- Geofence Status -->
+    <div class="card" style="flex: 1; min-width: 400px;">
+        <div class="card-header flex justify-between items-center">
+            <h3 class="card-title">Geofence Status</h3>
+            <a href="{{ route('geofence.manage') }}" class="btn btn-sm btn-primary">
+                ⚙️ Manage Zones
+            </a>
+        </div>
+        <div class="card-body">
+            <div id="geofenceMap" style="height: 400px; border-radius: 6px; overflow: hidden;">
+                <small>🗺️ Interactive map loading... Click "Manage Zones" to configure geofencing.</small>
+            </div>
+            <div class="mt-4 flex justify-between items-center text-sm">
+                <span>Active Zones: <strong>{{ $activeZones ?? 0 }}</strong></span>
+                <span>Employees in Zone: 
+                    <strong>{{ $employeesInZone ?? 0 }}/{{ $totalEmployees ?? 0 }}</strong>
+                </span>
+            </div>
+        </div>
+    </div>
+
 </div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -735,31 +764,64 @@
     });
 </script>
 
-
-    <!-- Geofence Overview -->
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Geofence Status</h3>
-            <a href="{{ route('geofence.manage') }}" class="btn-primary">
-                ⚙️ Manage Zones
-            </a>
-        </div>
-        <div class="card-body">
-            <div class="geofence-map" id="geofenceMap">
-                🗺️ Interactive geofence map will load here
-                <br><small>Click "Manage Zones" to configure geofencing</small>
-            </div>
-            <div style="margin-top: 16px;">
-                <div class="flex justify-between items-center">
-                    <span>Active Zones: <strong>{{ $activeZones ?? 0 }}</strong></span>
-                    <span>Employees in Zone: 
-                        <strong>{{ $employeesInZone ?? 0 }}/{{ $totalEmployees ?? 0 }}</strong>
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
     
+        // Blade → JS variable injection
+        const inZone = {{ $inZone ?? 0 }};
+        const outOfZone = {{ $outOfZone ?? 0 }};
+        const violations = {{ $violations ?? 0 }};
+        const firstZoneRadius = {{ $zones->first()->radius ?? 0 }};
+        const zoneActive = {{ $zones->count() > 0 ? 'true' : 'false' }};
+    
+        const map = L.map('geofenceMap').setView([-17.8252, 31.0335], 13);
+    
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+    
+        const zones = @json($zones ?? []);
+        const employees = @json($employeesInZoneData ?? []);
+    
+        zones.forEach(zone => {
+            L.circle([zone.lat, zone.lng], {
+                radius: zone.radius,
+                color: 'blue',
+                fillColor: '#2196f3',
+                fillOpacity: 0.4
+            }).addTo(map).bindPopup(`📍 ${zone.name}`);
+        });
+    
+        employees.forEach(emp => {
+            L.marker([emp.lat, emp.lng])
+                .addTo(map)
+                .bindPopup(`👤 ${emp.name}`);
+        });
+    
+        const summaryControl = L.control({ position: 'topright' });
+        summaryControl.onAdd = function () {
+            const div = L.DomUtil.create('div', 'geofence-summary');
+            div.innerHTML = `
+                <div style="background: white; padding: 12px; border-radius: 8px; 
+                            box-shadow: 0 2px 6px rgba(0,0,0,0.2); font-size: 14px;">
+                    <div style="margin-bottom: 8px;">
+                        🗺️ <strong>Main Office Zone</strong><br>
+                        <small>Radius: ${firstZoneRadius}m | Active: ${zoneActive === 'true' ? 'Yes' : 'No'}</small>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <div>🟢 In Zone: ${inZone}</div>
+                        <div>🔴 Out of Zone: ${outOfZone}</div>
+                        <div>⚠️ Violations: ${violations}</div>
+                    </div>
+                </div>
+            `;
+            return div;
+        };
+        summaryControl.addTo(map);
+    
+    });
+    </script>
+     
 </div>
 
 <!-- Biometric Authentication Overview -->
@@ -1207,27 +1269,7 @@ function initializeCharts() {
     `;
 }
 
-// Geofence map initialization
-function initializeGeofenceMap() {
-    const mapContainer = document.getElementById('geofenceMap');
-    
-    // Simulate loading geofence data
-    setTimeout(() => {
-        mapContainer.innerHTML = `
-            <div style="text-align: center;">
-                <div style="margin-bottom: 16px;">
-                    🗺️ <strong>Main Office Zone</strong><br>
-                    <small>Radius: 100m | Active: Yes</small>
-                </div>
-                <div style="display: flex; justify-content: space-around; margin-top: 16px; font-size: 14px;">
-                    <div>🟢 In Zone: 187</div>
-                    <div>🔴 Out of Zone: 15</div>
-                    <div>⚠️ Violations: 3</div>
-                </div>
-            </div>
-        `;
-    }, 2000);
-}
+
 
 // Notification system
 function showNotification(message, type = 'info') {

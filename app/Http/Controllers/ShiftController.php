@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Shift;
 use Illuminate\Http\Request;
+use App\Models\EmployeeShift;
+use App\Models\Employee;
+
 
 class ShiftController extends Controller
 {
@@ -36,6 +39,7 @@ class ShiftController extends Controller
                 'shift_id' => $request->shift_id,
             ]
         );
+        
     
         return redirect()->back()->with('success', 'Shift assigned successfully.');
     }

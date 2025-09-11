@@ -6,6 +6,8 @@ use App\Models\EmployeeShift;
 use Illuminate\Http\Request;
 use App\Models\Employee;
 use App\Models\Shift;
+use Illuminate\Support\Facades\Auth;
+
 
 class EmployeeShiftController extends Controller
 {
@@ -14,11 +16,16 @@ class EmployeeShiftController extends Controller
      */
     public function index()
     {
-        $employees = Employee::with(['user', 'branch', 'department'])->get();
-        $shifts = Shift::orderBy('start_time')->get();
-        $today = now()->toDateString();
-    
-        return view('manager.employees', compact('employees', 'shifts', 'today'));
+        $user = Auth::user();
+        $employeeId = $user->employee->id;
+
+        $upcomingShifts = EmployeeShift::with('shift')
+        ->where('employee_id', $employeeId)
+        ->where('date', '>=', now()->toDateString())
+        ->orderBy('date')
+        ->get();
+
+    return view('employee.shifts', compact('upcomingShifts'));
     }
     
     

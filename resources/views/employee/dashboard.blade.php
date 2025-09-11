@@ -12,17 +12,7 @@
 
 <h1 style="font-size: 24px; margin-bottom: 20px;">Welcome, {{ $user->name }}</h1>
 
-<!-- Clock In / Clock Out -->
-{{-- <div style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;">
-    <h2 style="font-size:18px; margin-bottom:10px;">Clock In / Clock Out</h2>
-    <p style="color:#6b7280; margin-bottom:10px;">Click below to log your attendance</p>
-    <form action="{{ route('employee.clock') }}" method="POST">
-        @csrf
-        <button type="submit" style="padding:10px 20px; background:#1E3A8A; color:#fff; border:none; border-radius:5px; cursor:pointer;">
-            Clock In / Out
-        </button>
-    </form>
-</div> --}}
+
 
 <!-- Recent Attendance Logs -->
 <div style="background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-bottom:20px;">
@@ -66,7 +56,7 @@
         <tbody>
             @forelse($leaveRequests as $leave)
             <tr>
-                <td style="border:1px solid #e5e7eb; padding:10px;">{{ $leave->type }}</td>
+                <td style="border:1px solid #e5e7eb; padding:10px;">{{ ucfirst($leave->leave_type) }}</td>
                 <td style="border:1px solid #e5e7eb; padding:10px;">{{ $leave->start_date }}</td>
                 <td style="border:1px solid #e5e7eb; padding:10px;">{{ $leave->end_date }}</td>
                 <td style="border:1px solid #e5e7eb; padding:10px;">{{ ucfirst($leave->status) }}</td>

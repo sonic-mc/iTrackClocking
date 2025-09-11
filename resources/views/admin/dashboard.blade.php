@@ -531,7 +531,8 @@
 </div>
 
 <!-- Quick Actions -->
-<div class="card">
+<!-- Quick Actions -->
+<div class="card mb-4"> <!-- Added mb-4 for spacing -->
     <div class="card-header">
         <h3 class="card-title">Quick Actions</h3>
     </div>
@@ -570,6 +571,7 @@
     </div>
 </div>
 
+
 <div class="dashboard-grid">
     <!-- Real-time Alerts & Notifications -->
     <div class="alert-card">
@@ -583,11 +585,11 @@
             @forelse($notifications as $notification)
                 <div class="alert-item">
                     <div class="alert-icon 
-                        {{ $notification->type === 'geofence' ? 'danger' : 
-                           ($notification->type === 'late' ? 'warning' : 
+                        {{ $notification->type === 'geofence' ? 'danger' :
+                           ($notification->type === 'late' ? 'warning' :
                            ($notification->type === 'leave' ? 'info' : 'warning')) }}">
-                        {{ $notification->type === 'geofence' ? '⚠️' : 
-                           ($notification->type === 'late' ? '🕐' : 
+                        {{ $notification->type === 'geofence' ? '⚠️' :
+                           ($notification->type === 'late' ? '🕐' :
                            ($notification->type === 'leave' ? '📝' : '⏳')) }}
                     </div>
                     <div class="alert-content">
@@ -632,7 +634,7 @@
                     @foreach($todayAttendance as $log)
                     @php
                         $status = 'Clocked Out';
-                        $badge = 'secondary';
+                        $badge = 'primary';
                         $icon = '⚪';
                 
                         $shiftStart = \Carbon\Carbon::parse('08:00:00');
@@ -678,15 +680,15 @@
                         </td>
                     </tr>
                 @endforeach
-                
                 </tbody>
-                
             </table>
         </div>
     </div>
 </div>
 
-<<div class="dashboard-grid" style="display: flex; gap: 24px; flex-wrap: wrap;">
+
+
+<div class="dashboard-grid" style="display: flex; gap: 24px; flex-wrap: wrap;">
     
     <!-- Weekly Attendance Trends -->
     <div class="card" style="flex: 1; min-width: 400px;">

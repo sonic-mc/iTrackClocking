@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Employee;
+use App\Models\Biometric;
+
 
 class AdminController extends Controller
 {
@@ -12,9 +15,12 @@ class AdminController extends Controller
     }
 
     public function biometric()
-    {
-        return view('admin.biometric');
-    }
+{
+    $employees = Employee::with(['user', 'branch', 'department'])->orderBy('created_at', 'desc')->get();
+    $biometrics = Biometric::with('employee.user')->orderBy('created_at', 'desc')->get();
+
+    return view('admin.biometric', compact('employees', 'biometrics'));
+}
 
     public function audit()
     {

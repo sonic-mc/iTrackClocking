@@ -75,6 +75,7 @@
                                         <th>Break Start</th>
                                         <th>Break End</th>
                                         <th>Created</th>
+                                        <th class="text-center">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -86,10 +87,33 @@
                                         <td>{{ $shift->break_start ? \Carbon\Carbon::parse($shift->break_start)->format('H:i') : '—' }}</td>
                                         <td>{{ $shift->break_end ? \Carbon\Carbon::parse($shift->break_end)->format('H:i') : '—' }}</td>
                                         <td>{{ $shift->created_at->format('d M Y') }}</td>
+                                        <td class="text-center">
+                                            <div class="d-flex justify-content-center gap-2">
+                                                <!-- View -->
+                                                <a href="{{ route('shifts.show', $shift) }}" class="btn btn-sm btn-outline-secondary" title="View Shift">
+                                                    👁️
+                                                </a>
+                            
+                                                <!-- Edit -->
+                                                <a href="{{ route('shifts.edit', $shift) }}" class="btn btn-sm btn-outline-primary" title="Edit Shift">
+                                                    ✏️
+                                                </a>
+                            
+                                                <!-- Delete -->
+                                                <form action="{{ route('shifts.destroy', $shift) }}" method="POST" onsubmit="return confirm('Delete this shift?')" style="display:inline;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Shift">
+                                                        🗑️
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
                                     </tr>
                                     @endforeach
                                 </tbody>
                             </table>
+                            
                         </div>
                     @else
                         <p class="text-muted">No shifts available yet.</p>

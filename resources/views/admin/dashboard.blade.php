@@ -449,6 +449,7 @@
         <div class="stat-value">{{ $totalEmployees ?? 0 }}</div>
         <div class="stat-label">Total Employees</div>
     </div>
+    
 
    <!-- Currently Clocked In -->
     <div class="stat-card">
@@ -543,10 +544,11 @@
                 <div class="quick-action-label">Add Employee</div>
             </a>
             
-            <button class="quick-action-btn" onclick="openBiometricSetup()">
-                <div class="quick-action-icon">🔐</div>
-                <div class="quick-action-label">Biometric Setup</div>
-            </button>
+            <a href="{{ route('branches.create') }}" class="quick-action-btn">
+                <div class="quick-action-icon">🏢</div>
+                <div class="quick-action-label">Manage Branches</div>
+            </a>
+            
             
             <a href="{{ route('geofence.manage') }}" class="quick-action-btn">
                 <div class="quick-action-icon">🗺️</div>

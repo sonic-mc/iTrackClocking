@@ -8,5 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class Geofence extends Model
 {
     use HasFactory;
-    protected $fillable = ['name',  'latitude', 'longitude', 'radius'];
+    protected $fillable = [
+        'branch_id',
+        'name',
+        'latitude',
+        'longitude',
+        'radius',
+    ];
+    
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
+
 }

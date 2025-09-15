@@ -12,6 +12,7 @@ use App\Http\Controllers\EmployeeShiftController;
 use App\Http\Controllers\BreakController;
 use App\Http\Controllers\OvertimeLogController;
 use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\BranchController;
 
 /*
 |--------------------------------------------------------------------------
@@ -85,19 +86,15 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/geofence/manage', [GeofenceController::class, 'index'])->name('geofence.manage');
-    Route::post('/geofence/store', [GeofenceController::class, 'store'])->name('geofence.store');
-    Route::put('/geofence/{id}', [GeofenceController::class, 'update'])->name('geofence.update');
-    Route::delete('/geofence/{id}', [GeofenceController::class, 'destroy'])->name('geofence.destroy');
+    Route::resource('geofence', GeofenceController::class);
 });
 
 
 
 Route::middleware(['auth', 'role:admin, manager'])->group(function () {
     Route::get('/shifts/manage', [ShiftController::class, 'index'])->name('shifts.manage');
+    Route::resource('shifts', ShiftController::class);
     Route::post('/shifts/employees/assign-shift', [ShiftController::class, 'assignShift'])->name('employees.assignShift');
-    Route::post('/shifts/store', [ShiftController::class, 'store'])->name('shifts.store');
-    Route::put('/shifts/{id}', [ShiftController::class, 'update'])->name('shifts.update');
-    Route::delete('/shifts/{id}', [ShiftController::class, 'destroy'])->name('shifts.destroy');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -150,3 +147,13 @@ Route::middleware(['auth', 'role:admin,manager'])->prefix('admin')->name('admin.
     Route::post('employees', [EmployeeController::class, 'store'])->name('employees.store');
     Route::get('employees', [EmployeeController::class, 'index'])->name('employees.index');
 });
+
+Route::middleware(['auth'])->group(function () {
+    Route::resource('branches', BranchController::class);
+});
+
+Route::put('/settings/update', [SettingController::class, 'update'])->name('settings.update');
+Route::get('/audit/filter', [AuditLogController::class, 'filtered'])->name('audit.filtered');
+Route::get('/reports/attendance', [AuditLogController::class, 'generateAttendanceReport'])->name('reports.attendance');
+
+

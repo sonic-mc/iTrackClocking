@@ -59,7 +59,23 @@ class ShiftController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'break_start' => 'nullable|date_format:H:i',
+            'break_end' => 'nullable|date_format:H:i|after:break_start',
+        ]);
+
+        Shift::create([
+            'name' => $request->name,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'break_start' => $request->break_start,
+            'break_end' => $request->break_end,
+        ]);
+
+        return redirect()->route('shifts.manage')->with('success', 'Shift created successfully.');
     }
 
     /**
@@ -67,30 +83,51 @@ class ShiftController extends Controller
      */
     public function show(Shift $shift)
     {
-        //
+        return view('admin.shifts.show', compact('shift'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(Shift $shift)
-    {
-        //
-    }
+{
+    return view('admin.shifts.edit', compact('shift'));
+}
 
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Shift $shift)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'break_start' => 'nullable|date_format:H:i',
+            'break_end' => 'nullable|date_format:H:i|after:break_start',
+        ]);
+    
+        $shift->update([
+            'name' => $request->name,
+            'start_time' => $request->start_time,
+            'end_time' => $request->end_time,
+            'break_start' => $request->break_start,
+            'break_end' => $request->break_end,
+        ]);
+    
+        return redirect()->route('shifts.index')->with('success', 'Shift updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
+   
     public function destroy(Shift $shift)
     {
-        //
-    }
+    $shift->delete();
+
+    return redirect()->route('shifts.manage')->with('success', 'Shift deleted successfully.');
+
+}
+
 }

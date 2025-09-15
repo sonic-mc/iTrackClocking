@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Branch extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'address'];
+  
+    protected $fillable = ['name', 'address', 'geofence_coordinates'];
+
+    protected $casts = [
+        'geofence_coordinates' => 'array',
+    ];
 
     public function geofence()
 {

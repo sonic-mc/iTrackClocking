@@ -10,7 +10,6 @@ return new class extends Migration {
             $table->id();
             $table->string('name');
             $table->string('address');
-            $table->json('geofence_coordinates')->nullable();
             $table->timestamps();
         });
     }

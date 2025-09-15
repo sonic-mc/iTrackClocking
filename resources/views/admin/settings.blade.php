@@ -343,15 +343,25 @@
             <div class="setting-group">
                 <h3 class="setting-group-title">System Information</h3>
                 
-                <div class="setting-item">
-                    <div class="setting-label">
-                        <div class="setting-title">Company Name</div>
-                        <div class="setting-description">Organization name displayed throughout the system</div>
+                <form action="{{ route('settings.update') }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                
+                    <div class="setting-item">
+                        <div class="setting-label">
+                            <div class="setting-title">Company Name</div>
+                            <div class="setting-description">Organization name displayed throughout the system</div>
+                        </div>
+                        <div class="setting-control">
+                            <input type="text" class="form-input" value="{{ $settings['company_name'] ?? 'Your Company' }}" name="company_name">
+                        </div>
                     </div>
-                    <div class="setting-control">
-                        <input type="text" class="form-input" value="{{ $settings['company_name'] ?? 'Your Company' }}" name="company_name">
+                
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">💾 Save Settings</button>
                     </div>
-                </div>
+                </form>
+                
                 
                 <div class="setting-item">
                     <div class="setting-label">
@@ -428,6 +438,7 @@
                     </div>
                 </div>
                 
+               
                 <div class="setting-item">
                     <div class="setting-label">
                         <div class="setting-title">Auto Refresh</div>

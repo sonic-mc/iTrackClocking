@@ -19,23 +19,42 @@
             <form action="{{ route('geofence.store') }}" method="POST">
                 @csrf
                 <div class="row g-3">
+                    <!-- Branch Selector -->
+                    <div class="col-md-4">
+                        <label for="branch_id" class="form-label">Geofence Branch</label>
+                        <select name="branch_id" id="branch_id" class="form-select" required>
+                            <option value="" disabled selected>Select a branch</option>
+                            @foreach($branches as $branch)
+                                <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+        
+                    <!-- Geofence Name -->
                     <div class="col-md-4">
                         <label for="name" class="form-label">Geofence Name</label>
-                        <input type="text" name="name" id="name" class="form-control" placeholder="e.g. Main Office" required>
+                        <input type="text" name="name" id="name" class="form-control" placeholder="e.g. Main Gate Zone" required>
                     </div>
+        
+                    <!-- Latitude -->
                     <div class="col-md-4">
                         <label for="latitude" class="form-label">Latitude</label>
                         <input type="number" step="0.000001" name="latitude" id="latitude" class="form-control" placeholder="-17.8252" required>
                     </div>
+        
+                    <!-- Longitude -->
                     <div class="col-md-4">
                         <label for="longitude" class="form-label">Longitude</label>
                         <input type="number" step="0.000001" name="longitude" id="longitude" class="form-control" placeholder="31.0335" required>
                     </div>
+        
+                    <!-- Radius -->
                     <div class="col-md-4">
                         <label for="radius" class="form-label">Radius (meters)</label>
                         <input type="number" name="radius" id="radius" class="form-control" placeholder="e.g. 100" required>
                     </div>
                 </div>
+        
                 <div class="mt-4">
                     <button type="submit" class="btn btn-primary">💾 Save Geofence</button>
                 </div>
@@ -57,25 +76,44 @@
                         <table class="table table-bordered table-hover align-middle text-sm">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Name</th>
+                                    <th>Branch Name</th>
+                                    <th>Geofence Name</th>
                                     <th>Latitude</th>
                                     <th>Longitude</th>
                                     <th>Radius (m)</th>
                                     <th>Created At</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($geofences as $geofence)
-                                    <tr>
-                                        <td>{{ $geofence->name }}</td>
-                                        <td>{{ $geofence->latitude }}</td>
-                                        <td>{{ $geofence->longitude }}</td>
-                                        <td>{{ $geofence->radius }}</td>
-                                        <td>{{ $geofence->created_at->format('Y-m-d H:i') }}</td>
-                                    </tr>
+                                <tr>
+                                    <td>
+                                        <span class="fw-semibold">{{ $geofence->branch->name ?? '—' }}</span>
+                                        <br>
+                                    </td>
+                                    <td>{{ $geofence->name }}</td>
+                                    <td>{{ $geofence->latitude }}</td>
+                                    <td>{{ $geofence->longitude }}</td>
+                                    <td>{{ $geofence->radius }}</td>
+                                    <td>{{ $geofence->created_at->format('Y-m-d H:i') }}</td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-2">
+                                            <a href="{{ route('geofence.show', $geofence) }}" class="btn btn-sm btn-outline-secondary" title="View Geofence">👁️</a>
+                                            <a href="{{ route('geofence.edit', $geofence) }}" class="btn btn-sm btn-outline-primary" title="Edit Geofence">✏️</a>
+                                            <form action="{{ route('geofence.destroy', $geofence) }}" method="POST" onsubmit="return confirm('Delete this geofence?')" style="display:inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Geofence">🗑️</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
                                 @endforeach
                             </tbody>
                         </table>
+                        
+                        
                     </div>
                 @endif
             </div>

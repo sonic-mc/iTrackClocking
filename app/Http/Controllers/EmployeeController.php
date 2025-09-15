@@ -14,6 +14,7 @@ use App\Models\Geofence;
 use App\Models\GeofenceViolation;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Shift;
+use App\Models\EmployeeShift;
 
 class EmployeeController extends Controller
 {
@@ -22,11 +23,16 @@ class EmployeeController extends Controller
         $employees = Employee::with(['user', 'branch', 'department'])
             ->orderBy('created_at', 'desc')
             ->get();
+
+         $assignedEmployees = EmployeeShift::with(['employee.user', 'shift'])
+         ->orderBy('date')
+         ->get();
+            
     
         $shifts = Shift::orderBy('start_time')->get();
         $today = now()->toDateString();
     
-        return view('manager.employees', compact('employees', 'shifts', 'today'));
+        return view('manager.employees', compact('employees', 'shifts', 'today', 'assignedEmployees'));
     }
     
     

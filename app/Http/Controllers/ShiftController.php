@@ -14,35 +14,38 @@ class ShiftController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-{
-    $shifts = Shift::orderBy('start_time')->get(); // You can sort by name or start_time
+    {
+        $shifts = Shift::orderBy('start_time')->get(); // You can sort by name or start_time
 
-    return view('admin.shifts.manage', compact('shifts'));
-}
+        return view('admin.shifts.manage', compact('shifts'));
+    }
 
 
     public function assignShift(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'employee_id' => 'required|exists:employees,id',
             'shift_id'    => 'required|exists:shifts,id',
             'date'        => 'required|date',
         ]);
     
-        // Prevent duplicate assignment for same day
-        EmployeeShift::updateOrCreate(
-            [
-                'employee_id' => $request->employee_id,
-                'date'        => $request->date,
-            ],
-            [
-                'shift_id' => $request->shift_id,
-            ]
-        );
-        
+        $existing = EmployeeShift::where('employee_id', $validated['employee_id'])
+            ->where('date', $validated['date'])
+            ->first();
+    
+        if ($existing) {
+            $existing->update(['shift_id' => $validated['shift_id']]);
+        } else {
+            EmployeeShift::create([
+                'employee_id' => $validated['employee_id'],
+                'shift_id'    => $validated['shift_id'],
+                'date'        => $validated['date'],
+            ]);
+        }
     
         return redirect()->back()->with('success', 'Shift assigned successfully.');
     }
+    
     
 
 

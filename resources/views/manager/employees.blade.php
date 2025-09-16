@@ -16,6 +16,12 @@
                 📅 Assign Shifts
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button" role="tab">
+                🛠️ Edit Employee Details
+            </button>
+        </li>
+        
     </ul>
 
     <!-- Tab Content -->
@@ -104,6 +110,109 @@
             @endif
         </div>
 
+        <!-- Tab 3: Edit Employee Details -->
+        <div class="tab-pane fade" id="edit" role="tabpanel">
+            <form method="GET" action="{{ route('employees.search') }}" class="mb-4">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">Search by Name or Number</label>
+                        <input type="text" name="search" id="search" class="form-control" placeholder="e.g. John Doe or EMP123">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="branch_id" class="form-label">Branch</label>
+                        <select name="branch_id" id="branch_id" class="form-select">
+                            <option value="">All</option>
+                            @foreach($branches as $branch)
+                                <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="department_id" class="form-label">Department</label>
+                        <select name="department_id" id="department_id" class="form-select">
+                            <option value="">All</option>
+                            @foreach($departments as $department)
+                                <option value="{{ $department->id }}">{{ $department->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">All</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+                    </div>
+                </div>
+            </form>
+
+            @if($filteredEmployees->isEmpty())
+                <div class="alert alert-info">No employees match your criteria.</div>
+            @else
+                <table class="table table-bordered table-striped">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Employee #</th>
+                            <th>Branch</th>
+                            <th>Department</th>
+                            <th>Position</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($filteredEmployees as $employee)
+                        <tr>
+                            <td>{{ $employee->user->name ?? 'N/A' }}</td>
+                            <td>{{ $employee->employee_number }}</td>
+                            <td>{{ $employee->branch->name ?? 'N/A' }}</td>
+                            <td>{{ $employee->department->name ?? 'N/A' }}</td>
+                            <td>{{ $employee->position }}</td>
+                            <td>{{ ucfirst($employee->status) }}</td>
+                            <td class="text-center">
+                                <a href="{{ route('employees.show', $employee->id) }}" class="btn btn-sm btn-info me-1">View</a>
+                                <a href="{{ route('employees.edit', $employee->id) }}" class="btn btn-sm btn-warning me-1">Edit</a>
+                                <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" class="d-inline-block" onsubmit="return confirm('Are you sure?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </div>
+
+
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tabEl = document.querySelectorAll('button[data-bs-toggle="tab"]');
+
+    // Restore last active tab on page load
+    const lastTab = localStorage.getItem('activeTab');
+    if (lastTab) {
+        const someTab = document.querySelector(`button[data-bs-target="${lastTab}"]`);
+        if (someTab) new bootstrap.Tab(someTab).show();
+    }
+
+    // When switching tabs, store active tab id
+    tabEl.forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function (event) {
+            localStorage.setItem('activeTab', event.target.getAttribute('data-bs-target'));
+        });
+    });
+});
+</script>
+@endpush

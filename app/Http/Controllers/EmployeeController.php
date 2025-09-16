@@ -15,9 +15,62 @@ use App\Models\GeofenceViolation;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Shift;
 use App\Models\EmployeeShift;
+use Carbon\Carbon;
+
 
 class EmployeeController extends Controller
 {
+
+    public function search(Request $request)
+        {
+            $query = Employee::query()->with(['user', 'branch', 'department']);
+
+            if ($request->filled('search')) {
+                $query->whereHas('user', fn($q) =>
+                    $q->where('name', 'like', '%' . $request->search . '%')
+                )->orWhere('employee_number', 'like', '%' . $request->search . '%');
+            }
+
+            if ($request->filled('branch_id')) {
+                $query->where('branch_id', $request->branch_id);
+            }
+
+            if ($request->filled('department_id')) {
+                $query->where('department_id', $request->department_id);
+            }
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            $filteredEmployees = $query->get();
+
+            // Include all other variables needed by the view
+            $employees = Employee::with(['user', 'branch', 'department'])
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            $assignedEmployees = EmployeeShift::with(['employee.user', 'shift'])
+                ->orderBy('date')
+                ->get();
+
+            $shifts = Shift::orderBy('start_time')->get();
+            $today = now()->toDateString();
+            $branches = Branch::all();
+            $departments = Department::all();
+
+            return view('manager.employees', compact(
+                'employees',
+                'assignedEmployees',
+                'shifts',
+                'today',
+                'branches',
+                'departments',
+                'filteredEmployees'
+            ));
+        }
+
+
     public function index()
     {
         $employees = Employee::with(['user', 'branch', 'department'])
@@ -31,8 +84,11 @@ class EmployeeController extends Controller
     
         $shifts = Shift::orderBy('start_time')->get();
         $today = now()->toDateString();
-    
-        return view('manager.employees', compact('employees', 'shifts', 'today', 'assignedEmployees'));
+        $branches = Branch::all();
+        $departments = Department::all();
+        $filteredEmployees = $employees;
+        
+        return view('manager.employees', compact('employees', 'shifts', 'today', 'assignedEmployees', 'branches', 'departments', 'filteredEmployees'  ));
     }
     
     
@@ -117,34 +173,58 @@ class EmployeeController extends Controller
      * Display the specified resource.
      */
     public function show(Employee $employee)
-    {
-        //
-    }
+{
+    $employee->load(['user', 'branch', 'department']);
+    return view('manager.show', compact('employee'));
+}
+
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(Employee $employee)
     {
-        //
+        $branches = Branch::all();
+        $departments = Department::all();
+        return view('manager.edit', compact('employee', 'branches', 'departments'));
     }
+    
+
+    
+
 
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, Employee $employee)
     {
-        //
+        $validated = $request->validate([
+            'employee_number' => 'required|unique:employees,employee_number,' . $employee->id,
+            'branch_id' => 'required|exists:branches,id',
+            'department_id' => 'required|exists:departments,id',
+            'position' => 'required|string|max:255',
+            'status' => 'required|in:active,inactive',
+        ]);
+    
+        $employee->update($validated);
+    
+        return redirect()->route('employees.edit', $employee->id)
+                         ->with('success', 'Employee updated successfully.');
     }
+    
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Employee $employee)
     {
-        //
+        $employee->delete();
+        return redirect()->route('employees.index')
+                         ->with('success', 'Employee deleted successfully.');
     }
+
     
+
     public function clock(Request $request)
     {
         $user = Auth::user();

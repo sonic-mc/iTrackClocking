@@ -14,71 +14,81 @@
         --card-shadow-hover: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
 
-    /* Enhanced Card Animations */
-    .metric-card {
-        background: white;
-        border-radius: 16px;
-        padding: 24px;
-        transition: all 0.3s ease;
-        border: 1px solid #e0e0e0;
-        position: relative;
-        overflow: hidden;
-    }
+   /* Enhanced Card Animations – Rectangular Horizontal Layout */
+.metric-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 300px;
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
 
-    .metric-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(45deg, transparent, rgba(26, 115, 232, 0.03), transparent);
-        transform: translateX(-100%);
-        transition: transform 0.6s ease;
-    }
+/* Gradient shimmer effect */
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, transparent, rgba(26, 115, 232, 0.03), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
 
-    .metric-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--card-shadow-hover);
-    }
+/* Hover elevation and shimmer */
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-shadow-hover);
+}
 
-    .metric-card:hover::before {
-        transform: translateX(100%);
-    }
+.metric-card:hover::before {
+    transform: translateX(100%);
+}
 
-    .metric-value {
-        font-size: 48px;
-        font-weight: 600;
-        color: #1a73e8;
-        line-height: 1;
-        margin: 16px 0;
-        transition: all 0.3s ease;
-    }
+/* Metric value styling */
+.metric-value {
+    font-size: 48px;
+    font-weight: 600;
+    color: #1a73e8;
+    line-height: 1;
+    margin: 16px 0;
+    transition: all 0.3s ease;
+}
 
-    .metric-card:hover .metric-value {
-        transform: scale(1.05);
-    }
+.metric-card:hover .metric-value {
+    transform: scale(1.05);
+}
 
-    .metric-label {
-        font-size: 16px;
-        color: #5f6368;
-        font-weight: 500;
-    }
+/* Label and trend styling */
+.metric-label {
+    font-size: 16px;
+    color: #5f6368;
+    font-weight: 500;
+}
 
-    .metric-trend {
-        padding: 4px 12px;
-        border-radius: 16px;
-        font-size: 14px;
-        font-weight: 500;
-        background: #e8f0fe;
-        color: #1a73e8;
-        display: inline-block;
-        transition: all 0.3s ease;
-    }
+.metric-trend {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    background: #e8f0fe;
+    color: #1a73e8;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
 
-    .metric-card:hover .metric-trend {
-        transform: translateX(5px);
-    }
+.metric-card:hover .metric-trend {
+    transform: translateX(5px);
+}
 
     /* Tab System Styles */
     .tab-container {
@@ -178,9 +188,10 @@
         </div>
 
         <!-- Metrics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Horizontal Metrics Row -->
+        <div class="flex flex-wrap gap-6 mb-8 justify-start">
             <!-- Total Employees -->
-            <div class="metric-card">
+            <div class="metric-card w-full sm:w-[300px] h-[160px] flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <span class="metric-label">Total Employees</span>
                     <span class="metric-trend">
@@ -195,7 +206,7 @@
             </div>
 
             <!-- Present Today -->
-            <div class="metric-card">
+            <div class="metric-card w-full sm:w-[300px] h-[160px] flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <span class="metric-label">Present Today</span>
                     <span class="metric-trend">
@@ -205,13 +216,13 @@
                 <div class="metric-value">{{ $presentCount }}</div>
                 <div class="h-1 bg-gray-100 rounded-full overflow-hidden">
                     <div class="h-full bg-success-green"
-                         style="width: {{ $employeeCount > 0 ? round(($presentCount / $employeeCount) * 100) : 0 }}%">
+                        style="width: {{ $employeeCount > 0 ? round(($presentCount / $employeeCount) * 100) : 0 }}%">
                     </div>
                 </div>
             </div>
 
             <!-- Pending Leaves -->
-            <div class="metric-card">
+            <div class="metric-card w-full sm:w-[300px] h-[160px] flex flex-col justify-between">
                 <div class="flex justify-between items-start">
                     <span class="metric-label">Pending Leaves</span>
                     @if($pendingLeaves > 0)

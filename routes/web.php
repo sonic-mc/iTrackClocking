@@ -13,6 +13,7 @@ use App\Http\Controllers\BreakController;
 use App\Http\Controllers\OvertimeLogController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\SettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +29,9 @@ use App\Http\Controllers\BranchController;
 Route::get('/', function () {
     return redirect()->route('login');
 });
+
+Route::get('/employees/search', [EmployeeController::class, 'search'])->name('employees.search');
+Route::get('/geofences', [GeofenceController::class, 'indexx'])->name('geofence.mapview');
 
 
 Route::middleware(['auth', 'role:employee,manager,admin'])->group(function () {
@@ -137,15 +141,20 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:manager'])->group(function () {
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
+
+Route::resource('employees', EmployeeController::class);
+
+   
    
 });
 
 Route::get('/attendance/manage', [AttendanceLogController::class, 'overview'])->name('employees.attendance');
-
 Route::middleware(['auth', 'role:admin,manager'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('employees/create', [EmployeeController::class, 'create'])->name('employees.create');
     Route::post('employees', [EmployeeController::class, 'store'])->name('employees.store');
     Route::get('employees', [EmployeeController::class, 'index'])->name('employees.index');
+    Route::get('/employees/search', [EmployeeController::class, 'search'])->name('employees.search');
+   
 });
 
 Route::middleware(['auth'])->group(function () {

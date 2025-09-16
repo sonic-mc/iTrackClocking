@@ -1373,10 +1373,6 @@
                     <a href="{{ route('profile.index') }}">👤 Profile Settings</a>
                     <a href="{{ route('attendance.history') }}">📅 My Attendance</a>
                 
-                    @if(auth()->user()->isManager())
-                        <a href="{{ route('reports') }}">📊 Reports</a>
-                    @endif
-                
                     <hr>
                     <a href="{{ route('logout') }}"
                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -1522,12 +1518,10 @@
         
 
 
-<script>
-    document.getElementById("clock-label").textContent = "{{ auth()->user()->isClockedIn() ? 'Clock Out' : 'Clock In' }}";
-    document.querySelector("input[name='action']").value = "{{ auth()->user()->isClockedIn() ? 'out' : 'in' }}";
-</script>
-
-    
+        <script>
+            document.getElementById("clock-label").textContent = "{{ auth()->user()->isClockedIn() ? 'Clock Out' : 'Clock In' }}";
+            document.querySelector("input[name='action']").value = "{{ auth()->user()->isClockedIn() ? 'out' : 'in' }}";
+        </script>
 
             <!-- Navigation Menu -->
             <nav>
@@ -1550,12 +1544,9 @@
                     <div class="nav-title">Time Management</div>
                     <a href="{{ route('shifts.index') }}" class="nav-item {{ request()->routeIs('shifts.*') ? 'active' : '' }}">
                         <span class="nav-icon">🔄</span>
-                        Upcoming Shifts
+                        Assigned Shifts
                     </a>
-                    <a href="#" class="nav-item {{ request()->routeIs('breaks.*') ? 'active' : '' }}">
-                        <span class="nav-icon">☕</span>
-                        Breaks
-                    </a>
+                   
                     <a href="{{ route('overtime.index') }}" class="nav-item {{ request()->routeIs('overtime.*') ? 'active' : '' }}">
                         <span class="nav-icon">⏳</span>
                         Overtime
@@ -1592,27 +1583,11 @@
                         <span class="nav-icon">✅</span>
                         Approve Leaves
                     </a>
-                    <a href="#" class="nav-item {{ request()->routeIs('geofence.*') ? 'active' : '' }}">
+                    <a href="{{ route('geofence.mapview') }}" class="nav-item {{ request()->routeIs('geofence.mapview') ? 'active' : '' }}">
                         <span class="nav-icon">🗺️</span>
                         Geofencing
                     </a>
-                </div>
-
-                <!-- Reports -->
-                <div class="nav-section">
-                    <div class="nav-title">Reports</div>
-                    <a href="#" class="nav-item {{ request()->routeIs('reports.attendance') ? 'active' : '' }}">
-                        <span class="nav-icon">📈</span>
-                        Attendance Reports
-                    </a>
-                    <a href="#" class="nav-item {{ request()->routeIs('reports.payroll') ? 'active' : '' }}">
-                        <span class="nav-icon">💰</span>
-                        Payroll Reports
-                    </a>
-                    <a href="#" class="nav-item {{ request()->routeIs('reports.analytics') ? 'active' : '' }}">
-                        <span class="nav-icon">📊</span>
-                        Analytics
-                    </a>
+                    
                 </div>
                 @endif
                 @endauth
@@ -1626,14 +1601,7 @@
                         <span class="nav-icon">⚙️</span>
                         Settings
                     </a>
-                    <a href="{{ route('admin.biometric') }}" class="nav-item {{ request()->routeIs('admin.biometric') ? 'active' : '' }}">
-                        <span class="nav-icon">🔐</span>
-                        Biometric Setup
-                    </a>
-                    <a href="{{ route('admin.audit') }}" class="nav-item {{ request()->routeIs('admin.audit') ? 'active' : '' }}">
-                        <span class="nav-icon">🔍</span>
-                        Audit Logs
-                    </a>
+                   
                 </div>
                 @endif
                 @endauth

@@ -6,10 +6,30 @@ use Illuminate\Http\Request;
 use App\Models\Geofence;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Branch;
+use App\Models\Employee;
+use App\Models\User;
+use Illuminate\Support\Facades\Validator;
 
 
 class GeofenceController extends Controller
 {
+
+    public function indexx()
+    {
+        // Load geofences with branch
+        $geofences = Geofence::with('branch')->get();
+
+        // Attach active employees per geofence via branch_id
+        foreach ($geofences as $geofence) {
+            $geofence->activeEmployees = Employee::with('user')
+                ->where('branch_id', $geofence->branch_id)
+                ->where('status', 'active')
+                ->get();
+        }
+        return view('geofence.index', compact('geofences'));
+    }
+
+
     public function index()
     {
         $geofences = Geofence::latest()->get();

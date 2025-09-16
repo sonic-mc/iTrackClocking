@@ -22,4 +22,12 @@ class Geofence extends Model
         return $this->belongsTo(Branch::class);
     }
 
+    public function activeEmployees()
+    {
+        return $this->hasMany(Employee::class)->where('status', 'active');
+    }
+
+    
+
+
 }

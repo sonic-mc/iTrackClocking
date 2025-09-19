@@ -183,7 +183,7 @@
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="mb-8">
-            <h1 class="text-2xl font-semibold text-gray-900">Dashboard Overview</h1>
+            <h1 class="text-2xl font-semibold text-gray-900">Manager Dashboard</h1>
             <p class="text-gray-600">Welcome back, {{ Auth::user()->name }}</p>
         </div>
 

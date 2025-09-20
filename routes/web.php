@@ -139,7 +139,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/leave/{id}/reject', [LeaveRequestController::class, 'reject'])->name('leave.reject.action');
 });
 
-Route::middleware(['auth', 'role:manager'])->group(function () {
+Route::middleware(['auth', 'role:admin,manager'])->group(function () {
     Route::get('/employees', [EmployeeController::class, 'index'])->name('employees.index');
     Route::post('/employees', [EmployeeController::class, 'store'])->name('employees.store');
 
@@ -150,6 +150,7 @@ Route::resource('employees', EmployeeController::class);
 });
 
 Route::get('/attendance/manage', [AttendanceLogController::class, 'overview'])->name('employees.attendance');
+
 Route::middleware(['auth', 'role:admin,manager'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('employees/create', [EmployeeController::class, 'create'])->name('employees.create');
     Route::post('employees', [EmployeeController::class, 'store'])->name('employees.store');

@@ -9,10 +9,12 @@ use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use App\Traits\AuditLogger;
 
 
 class GeofenceController extends Controller
 {
+    use AuditLogger;
 
     public function indexx()
     {

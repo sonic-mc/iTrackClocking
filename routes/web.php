@@ -14,6 +14,7 @@ use App\Http\Controllers\OvertimeLogController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\AuditLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -168,3 +169,11 @@ Route::get('/audit/filter', [AuditLogController::class, 'filtered'])->name('audi
 Route::get('/reports/attendance', [AuditLogController::class, 'generateAttendanceReport'])->name('reports.attendance');
 
 
+
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('logs', [AuditLogController::class, 'index'])->name('logs.index');
+    Route::get('logs/export', [AuditLogController::class, 'export'])->name('logs.export');
+  
+});
+
+Route::get('audit-logs/download', [AuditLogController::class, 'download'])->name('audit-logs.download');

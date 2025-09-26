@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use App\Traits\AuditLogger;
 
 class NotificationController extends Controller
 {
+
+    use AuditLogger;
     /**
      * Display a listing of the resource.
      */

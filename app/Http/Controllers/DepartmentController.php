@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\Department;
 use Illuminate\Http\Request;
+use App\Traits\AuditLogger;
+
+
 
 class DepartmentController extends Controller
 {
+    use AuditLogger;
     /**
      * Display a listing of the resource.
      */

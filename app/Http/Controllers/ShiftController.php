@@ -6,10 +6,13 @@ use App\Models\Shift;
 use Illuminate\Http\Request;
 use App\Models\EmployeeShift;
 use App\Models\Employee;
+use App\Traits\AuditLogger;
 
 
 class ShiftController extends Controller
 {
+
+    use AuditLogger;
     /**
      * Display a listing of the resource.
      */

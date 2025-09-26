@@ -8,9 +8,13 @@ use App\Models\Employee;
 use App\Models\Shift;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Traits\AuditLogger;
+
 
 class EmployeeShiftController extends Controller
 {
+
+    use AuditLogger;
     /**
      * Display a listing of upcoming shifts for the authenticated employee.
      */

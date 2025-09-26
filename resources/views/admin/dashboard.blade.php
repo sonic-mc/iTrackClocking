@@ -12,9 +12,10 @@
         <button class="btn-secondary" onclick="refreshDashboard()">
             <span id="refreshIcon">🔄</span> Refresh
         </button>
-        <button class="btn-primary" onclick="exportReports()">
-            📊 Export Reports
-        </button>
+        <a href="{{ route('audit-logs.download') }}" class="btn-primary">
+            <i class="bi bi-download me-1"></i> Download Audit Logs
+        </a>
+        
     </div>
 </div>
 @endsection

@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ConfirmsPasswords;
+use App\Traits\AuditLogger;
 
 class ConfirmPasswordController extends Controller
 {
+
+    use AuditLogger;
     /*
     |--------------------------------------------------------------------------
     | Confirm Password Controller

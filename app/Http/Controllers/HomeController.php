@@ -15,9 +15,11 @@ use App\Models\AuditLog;
 use App\Models\Geofence;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use App\Traits\AuditLogger;
 
 class HomeController extends Controller
 {
+    use AuditLogger;
     /**
      * Create a new controller instance.
      *

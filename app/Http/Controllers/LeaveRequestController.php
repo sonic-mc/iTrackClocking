@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
+use App\Traits\AuditLogger;
+
 
 class LeaveRequestController extends Controller
 {
+
+    use AuditLogger;
 
     // Show leave request form
     public function requestForm()

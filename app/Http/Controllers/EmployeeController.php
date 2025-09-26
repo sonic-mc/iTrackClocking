@@ -16,10 +16,14 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Shift;
 use App\Models\EmployeeShift;
 use Carbon\Carbon;
+use App\Traits\AuditLogger;
+
 
 
 class EmployeeController extends Controller
 {
+
+    use AuditLogger;
 
     public function search(Request $request)
         {

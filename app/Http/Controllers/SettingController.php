@@ -3,9 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Setting;
+use App\Traits\AuditLogger;
+
 
 class SettingController extends Controller
 {
+
+    use AuditLogger;
     public function update(Request $request)
     {
         $request->validate([

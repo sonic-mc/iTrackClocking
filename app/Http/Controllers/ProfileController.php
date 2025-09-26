@@ -4,15 +4,23 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\AuditLogger;
+use App\Models\User;
+use App\Models\Employee;
+use App\Models\Branch;
+use App\Models\Department;
+
 
 class ProfileController extends Controller
 {
+
+    use AuditLogger;
    // ProfileController.php
 
         public function index()
         {
             $user = auth()->user();
-            $employee = $user->employee; 
+            $employee = $user->employee;
 
             return view('profile.index', compact('user', 'employee'));
         }

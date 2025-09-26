@@ -1601,6 +1601,10 @@
                         <span class="nav-icon">⚙️</span>
                         Settings
                     </a>
+                    <a href="{{ route('admin.logs.index') }}" class="nav-item {{ request()->routeIs('admin.logs.index') ? 'active' : '' }}">
+                        <span class="nav-icon">📋</span>
+                        Audit Logs
+                    </a>
                    
                 </div>
                 @endif

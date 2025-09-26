@@ -24,39 +24,22 @@
                         @endforeach
                     </select>
                 </div>
-        
+
                 <div class="col-md-2">
-                    <label for="module" class="form-label">Module</label>
-                    <select name="module" id="module" class="form-select">
-                        <option value="">All Modules</option>
-                        @foreach($modules as $module)
-                            <option value="{{ $module }}" @selected(request('module') == $module)>
-                                {{ ucfirst($module) }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <label for="action" class="form-label">Action</label>
+                    <input type="text" name="action" id="action" class="form-control" placeholder="Search action..." value="{{ request('action') }}">
                 </div>
-        
-                <div class="col-md-2">
-                    <label for="severity" class="form-label">Severity</label>
-                    <select name="severity" id="severity" class="form-select">
-                        <option value="">All</option>
-                        <option value="info" @selected(request('severity') == 'info')>Info</option>
-                        <option value="warning" @selected(request('severity') == 'warning')>Warning</option>
-                        <option value="critical" @selected(request('severity') == 'critical')>Critical</option>
-                    </select>
-                </div>
-        
+
                 <div class="col-md-2">
                     <label for="from" class="form-label">From</label>
                     <input type="date" name="from" id="from" class="form-control" value="{{ request('from') }}">
                 </div>
-        
+
                 <div class="col-md-2">
                     <label for="to" class="form-label">To</label>
                     <input type="date" name="to" id="to" class="form-control" value="{{ request('to') }}">
                 </div>
-        
+
                 <div class="col-md-1">
                     <button class="btn btn-outline-primary w-100">
                         <i class="bi bi-funnel-fill"></i>
@@ -73,8 +56,6 @@
                 <i class="bi bi-file-earmark-pdf"></i> Export PDF
             </a>
         </div>
-        
-        
 
         {{-- Logs Table --}}
         @if($logs->count())
@@ -85,8 +66,8 @@
                         <th>User</th>
                         <th>Action</th>
                         <th>Description</th>
-                        <th>IP Address</th>
-                        <th>Timestamp</th>
+                        <th>Created At</th>
+                        <th>Updated At</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -102,19 +83,8 @@
                         </td>
                         <td><span class="badge bg-info text-dark">{{ ucfirst($log->action) }}</span></td>
                         <td>{{ $log->description ?? '—' }}</td>
-                        <td><code>{{ $log->ip_address ?? 'N/A' }}</code></td>
-                        <td>{{ \Carbon\Carbon::parse($log->timestamp)->format('d M Y, H:i') }}</td>
-
-                        <td>
-                            <span class="badge 
-                                @if($log->severity === 'critical') bg-danger 
-                                @elseif($log->severity === 'warning') bg-warning text-dark 
-                                @else bg-info text-dark 
-                                @endif">
-                                {{ ucfirst($log->severity ?? 'info') }}
-                            </span>
-                        </td>
-                        
+                        <td>{{ $log->created_at ? $log->created_at->format('d M Y, H:i') : '—' }}</td>
+                        <td>{{ $log->updated_at ? $log->updated_at->format('d M Y, H:i') : '—' }}</td>
                     </tr>
                     @endforeach
                 </tbody>

@@ -4,9 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use Illuminate\Http\Request;
+use App\Traits\AuditLogger;
+
 
 class BranchController extends Controller
 {
+
+    use AuditLogger;
+
     public function index()
     {
         $branches = Branch::latest()->get();

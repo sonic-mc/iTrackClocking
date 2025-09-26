@@ -9,10 +9,15 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
+use App\Traits\AuditLogger;
+use App\Models\AttendanceLog;
+
 
 
 class AuditLogController extends Controller
 {
+
+    use AuditLogger;
     /**
      * Display a listing of the resource.
      */

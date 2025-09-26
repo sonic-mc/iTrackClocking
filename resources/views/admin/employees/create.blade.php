@@ -31,16 +31,32 @@
         </div>
 
         <div>
-            <label for="branch_name" class="block font-medium">Branch</label>
-            <input type="text" name="branch_name" id="branch_name" class="w-full border rounded p-2" value="{{ old('branch_name') }}">
-            @error('branch_name') <p class="text-red-500">{{ $message }}</p> @enderror
+            <label for="branch_id" class="block font-medium">Branch</label>
+            <select name="branch_id" id="branch_id" class="w-full border rounded p-2">
+                <option value="">Select Branch</option>
+                @foreach($branches as $branch)
+                    <option value="{{ $branch->id }}" {{ old('branch_id') == $branch->id ? 'selected' : '' }}>
+                        {{ $branch->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('branch_id') <p class="text-red-500">{{ $message }}</p> @enderror
         </div>
+        
 
         <div>
-            <label for="department_name" class="block font-medium">Department</label>
-            <input type="text" name="department_name" id="department_name" class="w-full border rounded p-2" value="{{ old('department_name') }}">
-            @error('department_name') <p class="text-red-500">{{ $message }}</p> @enderror
+            <label for="department_id" class="block font-medium">Department</label>
+            <select name="department_id" id="department_id" class="w-full border rounded p-2">
+                <option value="">Select Department</option>
+                @foreach($departments as $department)
+                    <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                        {{ $department->name }}
+                    </option>
+                @endforeach
+            </select>
+            @error('department_id') <p class="text-red-500">{{ $message }}</p> @enderror
         </div>
+        
 
         <div>
             <label for="position" class="block font-medium">Position</label>

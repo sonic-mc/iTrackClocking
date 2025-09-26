@@ -6,9 +6,13 @@ use App\Models\AttendanceLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Employee;
+use App\Traits\AuditLogger;
+
 
 class AttendanceLogController extends Controller
 {
+
+    use AuditLogger;
 
      // Show the clock page
      public function showClock()

@@ -12,9 +12,15 @@ use Illuminate\Support\Str;
 use Webauthn\PublicKeyCredentialUserEntity;
 use Webauthn\PublicKeyCredentialRpEntity;
 use Webauthn\PublicKeyCredentialParameters;
+use App\Models\AttendanceLog;
+use App\Traits\AuditLogger;
+
 
 class BiometricController extends Controller
 {
+
+    use AuditLogger;
+
     public function setup()
     {
         $user = Auth::user();

@@ -17,6 +17,15 @@ return new class extends Migration
             $table->string('action');
             $table->string('ip_address')->nullable();
             $table->timestamps();
+            $table->string('model_type')->nullable();
+            $table->unsignedBigInteger('model_id')->nullable();
+            $table->json('changes')->nullable();
+            $table->string('url')->nullable();
+            $table->string('method')->nullable();
+            $table->text('user_agent')->nullable();
+            $table->string('location')->nullable();
+            
+
         });
         
     }

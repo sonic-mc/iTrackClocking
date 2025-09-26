@@ -15,11 +15,16 @@ use App\Models\User;
 use App\Models\AuditLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Traits\AuditLogger;
+
+
 
 
 
 class DashboardController extends Controller
 {
+    use AuditLogger;
+
     public function index()
     {
         $user = Auth::user();

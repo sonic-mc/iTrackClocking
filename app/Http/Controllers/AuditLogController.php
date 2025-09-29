@@ -70,7 +70,7 @@ class AuditLogController extends Controller
         }
 
         if ($format === 'pdf') {
-            $pdf = Pdf::loadView('audit_logs.pdf', compact('logs'))
+            $pdf = Pdf::loadView('admin.pdf', compact('logs'))
                       ->setPaper('a4', 'landscape');
 
             return $pdf->download("{$fileName}.pdf");
@@ -94,7 +94,7 @@ class AuditLogController extends Controller
     {
         $now = Carbon::now();
 
-        return view('admin.audit.index', [
+        return view('admin.audits', [
             'totalEvents'    => AuditLog::count(),
             'todayEvents'    => AuditLog::whereDate('created_at', $now->toDateString())->count(),
             'uniqueUsers'    => AuditLog::whereNotNull('user_id')->distinct('user_id')->count('user_id'),

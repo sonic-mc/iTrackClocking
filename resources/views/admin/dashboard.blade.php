@@ -1210,9 +1210,9 @@ function openBiometricDashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                            @foreach($recentActivities as $log)
+                                @foreach($recentActivities as $log)
                                 <tr>
-                                    <td>{{ $log->employee->user->name }}</td>
+                                    <td>{{ $log->employee?->user?->name ?? 'Unknown' }}</td>
                                     <td>
                                         @if($log->type === 'fingerprint')
                                             Fingerprint
@@ -1223,13 +1223,14 @@ function openBiometricDashboard() {
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge {{ $log->status === 'active' ? 'success' : 'warning' }}">
-                                            {{ ucfirst($log->status) }}
+                                        <span class="badge {{ $log->status === 'active' ? 'bg-success' : 'bg-warning' }}">
+                                            {{ ucfirst($log->status ?? 'Unknown') }}
                                         </span>
                                     </td>
-                                    <td>{{ $log->created_at->diffForHumans() }}</td>
+                                    <td>{{ $log->created_at?->diffForHumans() ?? '-' }}</td>
                                 </tr>
                             @endforeach
+
                         </tbody>
 
                         </table>

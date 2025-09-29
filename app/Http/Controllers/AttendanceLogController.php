@@ -18,6 +18,10 @@ class AttendanceLogController extends Controller
      public function showClock()
      {
          $user = Auth::user();
+ 
+         // Audit log
+         $this->logAudit('view_clock_page', "User #{$user->id} viewed clock page");
+ 
          $attendanceLogs = AttendanceLog::where('employee_id', $user->id)
              ->orderBy('created_at', 'desc')
              ->take(5)
@@ -25,6 +29,7 @@ class AttendanceLogController extends Controller
  
          return view('employee.clock', compact('user', 'attendanceLogs'));
      }
+ 
  
     /**
      * Display a listing of the resource.
@@ -36,10 +41,12 @@ class AttendanceLogController extends Controller
 
     public function overview()
     {
-         // Fetch employees with attendance logs ordered by clock in time
-    $employees = Employee::with(['user', 'attendanceLogs' => function($q) {
-        $q->orderBy('clock_in_time', 'desc');
-    }])->get();
+        $employees = Employee::with(['user', 'attendanceLogs' => function($q) {
+            $q->orderBy('clock_in_time', 'desc');
+        }])->get();
+
+        // Audit log
+        $this->logAudit('view_attendance_overview', 'Viewed attendance overview for all employees');
 
         return view('employee.attendance', compact('employees'));
     }
@@ -96,11 +103,11 @@ class AttendanceLogController extends Controller
     {
         $user = Auth::user();
         $employeeId = $user->employee->id ?? null;
-    
+
         if (!$employeeId) {
             return redirect()->back()->with('error', 'Employee record not found.');
         }
-    
+
         $attendanceLogs = AttendanceLog::where('employee_id', $employeeId)
             ->select([
                 'id',
@@ -115,7 +122,10 @@ class AttendanceLogController extends Controller
             ])
             ->orderByDesc('created_at')
             ->paginate(10);
-    
+
+        // Audit log
+        $this->logAudit('view_attendance_history', "Viewed attendance history for employee #{$employeeId}");
+
         return view('employee.history', compact('user', 'attendanceLogs'));
     }
     

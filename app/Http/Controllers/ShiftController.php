@@ -5,25 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\Shift;
 use Illuminate\Http\Request;
 use App\Models\EmployeeShift;
-use App\Models\Employee;
 use App\Traits\AuditLogger;
-
 
 class ShiftController extends Controller
 {
-
     use AuditLogger;
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $shifts = Shift::orderBy('start_time')->get(); // You can sort by name or start_time
-
+        $shifts = Shift::orderBy('start_time')->get();
+        $this->logAudit('view_shifts', 'Viewed list of all shifts');
         return view('admin.shifts.manage', compact('shifts'));
     }
 
-
+    /**
+     * Assign a shift to an employee.
+     */
     public function assignShift(Request $request)
     {
         $validated = $request->validate([
@@ -31,37 +31,24 @@ class ShiftController extends Controller
             'shift_id'    => 'required|exists:shifts,id',
             'date'        => 'required|date',
         ]);
-    
+
         $existing = EmployeeShift::where('employee_id', $validated['employee_id'])
             ->where('date', $validated['date'])
             ->first();
-    
+
         if ($existing) {
             $existing->update(['shift_id' => $validated['shift_id']]);
+            $this->logAudit('update_shift_assignment', "Updated shift assignment for employee #{$validated['employee_id']} on {$validated['date']}");
         } else {
-            EmployeeShift::create([
-                'employee_id' => $validated['employee_id'],
-                'shift_id'    => $validated['shift_id'],
-                'date'        => $validated['date'],
-            ]);
+            EmployeeShift::create($validated);
+            $this->logAudit('assign_shift', "Assigned shift #{$validated['shift_id']} to employee #{$validated['employee_id']} on {$validated['date']}");
         }
-    
+
         return redirect()->back()->with('success', 'Shift assigned successfully.');
     }
-    
-    
-
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Store a newly created shift.
      */
     public function store(Request $request)
     {
@@ -73,35 +60,14 @@ class ShiftController extends Controller
             'break_end' => 'nullable|date_format:H:i|after:break_start',
         ]);
 
-        Shift::create([
-            'name' => $request->name,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
-            'break_start' => $request->break_start,
-            'break_end' => $request->break_end,
-        ]);
+        $shift = Shift::create($request->all());
+        $this->logAudit('create_shift', "Created shift #{$shift->id} ({$shift->name})");
 
         return redirect()->route('shifts.manage')->with('success', 'Shift created successfully.');
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Shift $shift)
-    {
-        return view('admin.shifts.show', compact('shift'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Shift $shift)
-{
-    return view('admin.shifts.edit', compact('shift'));
-}
-
-    /**
-     * Update the specified resource in storage.
+     * Update a shift.
      */
     public function update(Request $request, Shift $shift)
     {
@@ -112,28 +78,24 @@ class ShiftController extends Controller
             'break_start' => 'nullable|date_format:H:i',
             'break_end' => 'nullable|date_format:H:i|after:break_start',
         ]);
-    
-        $shift->update([
-            'name' => $request->name,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
-            'break_start' => $request->break_start,
-            'break_end' => $request->break_end,
-        ]);
-    
+
+        $shift->update($request->all());
+        $this->logAudit('update_shift', "Updated shift #{$shift->id} ({$shift->name})");
+
         return redirect()->route('shifts.index')->with('success', 'Shift updated successfully.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete a shift.
      */
-   
     public function destroy(Shift $shift)
     {
-    $shift->delete();
+        $shiftName = $shift->name;
+        $shiftId = $shift->id;
+        $shift->delete();
 
-    return redirect()->route('shifts.manage')->with('success', 'Shift deleted successfully.');
+        $this->logAudit('delete_shift', "Deleted shift #{$shiftId} ({$shiftName})");
 
-}
-
+        return redirect()->route('shifts.manage')->with('success', 'Shift deleted successfully.');
+    }
 }

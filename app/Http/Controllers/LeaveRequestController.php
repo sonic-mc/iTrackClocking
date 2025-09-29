@@ -6,15 +6,14 @@ use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use App\Traits\AuditLogger;
 
-
 class LeaveRequestController extends Controller
 {
-
     use AuditLogger;
 
     // Show leave request form
     public function requestForm()
     {
+        $this->logAudit('view_leave_request_form', 'User accessed the leave request form');
         return view('leave.request');
     }
 
@@ -29,12 +28,14 @@ class LeaveRequestController extends Controller
 
         $employeeId = auth()->user()->employee->id;
 
-        LeaveRequest::create([
+        $leave = LeaveRequest::create([
             'employee_id' => $employeeId,
             'leave_type'  => $request->leave_type,
             'start_date'  => $request->start_date,
             'end_date'    => $request->end_date,
         ]);
+
+        $this->logAudit('create_leave_request', "Leave request #{$leave->id} submitted for {$request->leave_type}");
 
         return redirect()->route('leave.history')->with('success', 'Leave request submitted!');
     }
@@ -43,105 +44,53 @@ class LeaveRequestController extends Controller
     public function history()
     {
         $employee = auth()->user()->employee;
-    
+
         if (!$employee) {
-            // If the user doesn't have an employee record, return empty collection
             $leaveRequests = collect();
         } else {
-            // Fetch all leave requests for this employee
             $leaveRequests = LeaveRequest::where('employee_id', $employee->id)
-                ->orderBy('start_date', 'desc') // most recent first
+                ->orderBy('start_date', 'desc')
                 ->get();
         }
-    
+
+        $this->logAudit('view_leave_history', "User viewed their leave history");
+
         return view('leave.history', compact('leaveRequests'));
     }
-    
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-   
-
-   
-     * Display the specified resource.
-     */
-    public function show(LeaveRequest $leaveRequest)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(LeaveRequest $leaveRequest)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, LeaveRequest $leaveRequest)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(LeaveRequest $leaveRequest)
-    {
-        //
-    }
-
+    // Show all leave requests for approval
     public function approveIndex()
     {
-        // Fetch all leave requests with employee details
         $leaveRequests = LeaveRequest::with('employee.user')
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $this->logAudit('view_leave_approvals', "Admin viewed leave requests for approval");
+
         return view('leave.approval', compact('leaveRequests'));
     }
 
-    /**
-     * Approve a leave request
-     */
+    // Approve a leave request
     public function approve($id)
     {
         $leave = LeaveRequest::findOrFail($id);
         $leave->status = 'approved';
         $leave->save();
 
+        $this->logAudit('approve_leave_request', "Leave request #{$id} approved");
+
         return redirect()->route('leave.approve')->with('success', 'Leave request approved.');
     }
 
-    /**
-     * Reject a leave request
-     */
+    // Reject a leave request
     public function reject($id)
     {
         $leave = LeaveRequest::findOrFail($id);
         $leave->status = 'rejected';
         $leave->save();
 
+        $this->logAudit('reject_leave_request', "Leave request #{$id} rejected");
+
         return redirect()->route('leave.approve')->with('success', 'Leave request rejected.');
     }
 }
-
-

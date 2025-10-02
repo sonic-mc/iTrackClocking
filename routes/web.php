@@ -172,7 +172,7 @@ Route::get('/reports/attendance', [AuditLogController::class, 'generateAttendanc
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('logs', [AuditLogController::class, 'index'])->name('logs.index');
-    Route::get('logs/export', [AuditLogupController::class, 'export'])->name('logs.export');
+    Route::get('logs/export', [AuditLogController::class, 'export'])->name('logs.export');
   
 });
 

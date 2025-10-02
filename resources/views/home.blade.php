@@ -19,7 +19,6 @@
                         <p class="mb-4">Your account is awaiting admin approval and verification.<br>You'll be notified once access is granted.</p>
 
                         <div class="d-grid gap-3">
-                           
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="btn btn-outline-danger">

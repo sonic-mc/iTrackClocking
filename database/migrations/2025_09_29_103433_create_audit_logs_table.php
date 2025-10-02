@@ -16,7 +16,7 @@ return new class extends Migration
                   ->onDelete('set null');
             $table->string('action');
             $table->text('description')->nullable();
-            $table->timestamps(); // includes created_at & updated_at
+            $table->timestamps();
         });
     }
 

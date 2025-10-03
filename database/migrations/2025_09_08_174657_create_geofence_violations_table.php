@@ -10,7 +10,8 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {Schema::create('geofence_violations', function (Blueprint $table) {
+    {
+        Schema::create('geofence_violations', function (Blueprint $table) {
         $table->id();
         $table->foreignId('employee_id')->constrained()->onDelete('cascade');
         $table->foreignId('attendance_log_id')->constrained()->onDelete('cascade');

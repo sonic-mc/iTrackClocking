@@ -8,6 +8,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\AttendanceLog;
+use App\Models\Employee;
+use App\Models\EmployeeShift;
+use App\Models\OvertimeLog;
+use Carbon\Carbon;
+
 
 class User extends Authenticatable
 {
@@ -67,13 +72,21 @@ class User extends Authenticatable
     return $this->hasMany(AttendanceLog::class, 'employee_id');
 }
 
-public function isClockedIn(): bool
-{
-    // Check latest attendance record
-    $lastAttendance = $this->attendances()->latest()->first();
 
-    return $lastAttendance && is_null($lastAttendance->clock_out_time);
-}
+public function isClockedIn(): bool
+    {
+        $employee = $this->employee;
+        if (!$employee) {
+            return false;
+        }
+
+        // Consider user "clocked in" if there is a log today with clock_in_time set and clock_out_time not set
+        return $employee->attendanceLogs()
+            ->whereDate('created_at', Carbon::today())
+            ->whereNotNull('clock_in_time')
+            ->whereNull('clock_out_time')
+            ->exists();
+    }
 
 public function employee()
 {

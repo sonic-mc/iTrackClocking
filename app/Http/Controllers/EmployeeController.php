@@ -9,6 +9,7 @@ use App\Models\GeofenceViolation;
 use App\Models\Shift;
 use App\Models\EmployeeShift;
 use App\Models\Branch;
+use App\Models\User;
 use App\Models\Department;
 use App\Traits\AuditLogger;
 use Illuminate\Support\Facades\Auth;
@@ -66,33 +67,44 @@ class EmployeeController extends Controller
         ));
     }
 
+    public function create()
+    {
+        // Get only users who are registered but not yet linked to an employee
+        $users = User::doesntHave('employee')->get();
+        $branches = Branch::all();
+        $departments = Department::all();
+
+        return view('admin.employees.create', compact('users', 'branches', 'departments'));
+    }
+
+
     public function store(Request $request)
     {
         $request->validate([
             'user_id' => 'required|exists:users,id',
             'employee_number' => 'required|unique:employees,employee_number',
-            'branch_name' => 'required|string|max:255',
-            'department_name' => 'required|string|max:255',
+            'branch_id' => 'required|exists:branches,id',
+            'department_id' => 'required|exists:departments,id',
             'position' => 'required|string|max:255',
             'status' => 'required|in:active,inactive',
         ]);
-
-        $branch = Branch::firstOrCreate(['name' => $request->branch_name], ['address' => 'Not Provided']);
-        $department = Department::firstOrCreate(['name' => $request->department_name, 'branch_id' => $branch->id]);
-
+    
         $employee = Employee::create([
             'user_id' => $request->user_id,
             'employee_number' => $request->employee_number,
-            'branch_id' => $branch->id,
-            'department_id' => $department->id,
+            'branch_id' => $request->branch_id,
+            'department_id' => $request->department_id,
             'position' => $request->position,
             'status' => $request->status,
         ]);
-
+    
         $this->logAudit('create_employee', "Created employee #{$employee->id} ({$employee->employee_number})");
-
-        return redirect()->route('admin.employees.create')->with('success', 'Employee added successfully!');
+    
+        return redirect()
+            ->route('admin.employees.create')
+            ->with('success', 'Employee added successfully!');
     }
+    
 
     public function update(Request $request, Employee $employee)
     {
